@@ -1,3 +1,7 @@
+import java.io.SequenceInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Scanner;
 
 /*************************************************************************
@@ -7,6 +11,128 @@ import java.util.Scanner;
  *************************************************************************/
 
 public class PathFindingOnSquaredGrid {
+
+    private static HashMap<Integer, Integer> parentPointer;
+    private static ArrayList<Integer> closeList, openList;
+    private static Graph graph;
+    private static boolean[][] grid;
+    private static int SIZE;
+    private static int GOALX, GOALY;
+    private static int STARTX, STARTY;
+
+    static {
+        parentPointer = new HashMap<>();
+        closeList = new ArrayList<>();
+        openList = new ArrayList<>();
+    }
+
+    public void findPath(boolean[][] grid, int startX, int startY, int goalX, int goalY) {
+        this.grid = grid;
+        SIZE = grid.length;
+        GOALX = goalX;
+        GOALY = goalY;
+        STARTX = startX;
+        STARTY = startY;
+
+        graph = new Graph(SIZE * SIZE);
+        initializeGraph(grid);
+        System.out.println(graph);
+
+        int pointerX = startX;
+        int pointerY = startY;
+        parentPointer.put(id(pointerX, pointerY), id(pointerX, pointerY));
+        //System.out.println("[POINTER ID] " + id(pointerX, pointerY));
+        while (id(pointerX, pointerY) != id(goalX, goalY)) {
+            int pointerid = id(pointerX, pointerY);
+            Iterator iter = graph.getV(pointerid).iterator();
+
+            int min = SIZE * SIZE;
+            int minId = 0;
+            while (iter.hasNext()) {
+                int mover = (Integer) iter.next();
+                if (parentPointer.get(mover) == null) {
+                    int axis[] = axis(mover);
+                    int F = manhattan(axis[0], axis[1], GOALX, GOALY) + manhattan(axis[0], axis[1], STARTX, STARTY);
+                    if (F < min) {
+                        min = F;
+                        minId = mover;
+                    }
+                }
+            }
+
+            iter = null;
+
+            int tempmin = id(pointerX, pointerY);
+            parentPointer.put(minId, tempmin);
+
+            int axis[] = axis(minId);
+            pointerX = axis[0];
+            pointerY = axis[1];
+
+            System.out.println("[ID] " + minId + " [X] " + axis[0] + " [Y] " + axis[1]);
+        }
+
+        for (int x : parentPointer.keySet()) {
+            System.out.println("[KEY] " + x + " [PARENT] " + parentPointer.get(x));
+        }
+    }
+
+    private int manhattan(int ax, int ay, int bx, int by) {
+        return Math.abs(ax - ay) + Math.abs(bx - by);
+    }
+
+    private int id(int x, int y) {
+        return SIZE * y + x;
+    }
+
+    private int[] axis(int id) {
+        int y = id / SIZE;
+        int x = id - (y * SIZE);
+        return new int[]{x, y};
+    }
+
+    private boolean open(int x, int y) {
+        return grid[x][y];
+    }
+
+    public void initializeGraph(boolean[][] grid) {
+        for (int x = 0; x < SIZE; x++) {
+            for (int y = 0; y < SIZE; y++) {
+                //East
+                if (x < SIZE - 1 && open(x + 1, y)) {
+                    graph.addEdge(id(x, y), id(x + 1, y));
+                }
+                //South East
+                if (x < SIZE - 1 && y < SIZE - 1 && open(x + 1, y + 1)) {
+                    graph.addEdge(id(x, y), id(x + 1, y + 1));
+                }
+                //South
+                if (y < SIZE - 1 && open(x, y + 1)) {
+                    graph.addEdge(id(x, y), id(x, y + 1));
+                }
+                //South West
+                if (x > 0 && y < SIZE - 1 && open(x - 1, y + 1)) {
+                    graph.addEdge(id(x, y), id(x - 1, y + 1));
+                }
+                //West
+                if (y > 0 && open(x, y - 1)) {
+                    graph.addEdge(id(x, y), id(x, y - 1));
+                }
+                //North West
+                if (x > 0 && y > 0 && open(x - 1, y - 1)) {
+                    graph.addEdge(id(x, y), id(x - 1, y - 1));
+                }
+                //North
+                if (x > 0 && open(x - 1, y)) {
+                    graph.addEdge(id(x, y), id(x - 1, y));
+                }
+                //North East
+                if (x < SIZE - 1 && y > 0 && open(x, y - 1)) {
+                    graph.addEdge(id(x, y), id(x + 1, y - 1));
+                }
+            }
+        }
+    }
 
     // given an N-by-N matrix of open cells, return an N-by-N matrix
     // of cells reachable from the top
@@ -123,6 +249,12 @@ public class PathFindingOnSquaredGrid {
         // The lower the second parameter, the more obstacles (black cells) are generated
         boolean[][] randomlyGenMatrix = random(10, 0.8);
 
+        for (int x = 0; x < randomlyGenMatrix.length; x++) {
+            for (int y = 0; y < randomlyGenMatrix.length; y++) {
+                randomlyGenMatrix[x][y] = true;
+            }
+        }
+
         StdArrayIO.print(randomlyGenMatrix);
         show(randomlyGenMatrix, true);
 
@@ -153,6 +285,9 @@ public class PathFindingOnSquaredGrid {
         System.out.println("Enter j for B > ");
         int Bj = in.nextInt();
 
+        new PathFindingOnSquaredGrid().findPath(randomlyGenMatrix, Ai, Aj, Bi, Bj);
+
+
         // THIS IS AN EXAMPLE ONLY ON HOW TO USE THE JAVA INTERNAL WATCH
         // Stop the clock ticking in order to capture the time being spent on inputting the coordinates
         // You should position this command accordingly in order to perform the algorithmic analysis
@@ -165,6 +300,3 @@ public class PathFindingOnSquaredGrid {
     }
 
 }
-
-
-
