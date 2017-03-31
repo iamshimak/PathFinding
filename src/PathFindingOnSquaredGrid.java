@@ -1,6 +1,5 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.awt.*;
+import java.util.*;
 
 /*************************************************************************
  *  Author: Dr E Kapetanios
@@ -13,7 +12,7 @@ public class PathFindingOnSquaredGrid {
     private static HashMap<Integer, Integer> parentPointer;
     private static HashMap<Integer, Double> gCost;
     private static ArrayList<Integer> closeList, openList;
-    private static boolean[][] grid;
+    private static Cell[][] grid;
     private static int SIZE;
     private static int GOALX, GOALY;
 
@@ -24,136 +23,267 @@ public class PathFindingOnSquaredGrid {
         openList = new ArrayList<>();
     }
 
-    public void pathFindingManhattan(boolean[][] grid, int startX, int startY, int goalX, int goalY) {
+    public void findPathManhattan(Cell[][] grid, Cell start, Cell end) {
+        PriorityQueue<Cell> openList = new PriorityQueue<>(new Heuristic());
+        ArrayList<Cell> closeList = new ArrayList<>();
+
         this.grid = grid;
         SIZE = grid.length;
-        GOALX = goalX;
-        GOALY = goalY;
 
-        int goalAxis = id(goalX, goalY);
+        GOALX = end.getX();
+        GOALY = end.getY();
 
-        openList.add(id(startX, startY));
-        parentPointer.put(id(startX, startY), id(startX, startY));
-        gCost.put(id(startX, startY), 0.0);
+        show(grid, start.getX(), start.getY(), end.getX(), end.getY());
+
+        Cell endCell = null;
+
+        start.setG(0.0);
+        start.setParent(start);
+        openList.add(start);
 
         while (!openList.isEmpty()) {
-            int pointer = openList.get(openList.indexOf(searchMinHMan(openList)));
+            Cell current = openList.poll();
 
-            int[] poiA = axis(pointer);
-            show(grid, poiA[0], poiA[1]);
+            //show(grid, current.getX(), current.getY());
 
-            if (pointer == goalAxis) {
-                System.out.println("Path distance " + gCost.get(pointer));
+            if (current.getId() == end.getId()) {
+                System.out.println("[TRAVELED DISTANCE MANHATTAN] " + current.getG());
+                endCell = current;
                 break;
             }
 
-            openList.remove(openList.indexOf(pointer));
-            closeList.add(pointer);
+            closeList.add(current);
 
-            HashMap<Integer, Double> neighbourCost = new HashMap<>();
-            ArrayList<Integer> neighbours = neighbours(pointer, neighbourCost);
-            gcostNeighbours(neighbourCost, pointer);
+            ArrayList<Cell> neighbours = getNeighboursMan(current, grid);
+            checkNeighbourMan(neighbours, closeList, openList, current);
+        }
 
-            addNeighbours(neighbours, neighbourCost, pointer);
+        if (endCell != null) {
+            while (endCell != start) {
+                //System.out.print(endCell.getId() + " -> " + endCell.getParent().getId() + "\n");
+                show(grid, endCell.getX(), endCell.getY(), Color.green);
+                endCell = endCell.getParent();
+            }
         }
     }
 
-    public void pathFindingEuclidean(boolean[][] grid, int startX, int startY, int goalX, int goalY) {
+    public void findPathEuclidean(Cell[][] grid, Cell start, Cell end) {
+        PriorityQueue<Cell> openList = new PriorityQueue<>(new Heuristic());
+        ArrayList<Cell> closeList = new ArrayList<>();
+
         this.grid = grid;
         SIZE = grid.length;
-        GOALX = goalX;
-        GOALY = goalY;
 
-        int goalAxis = id(goalX, goalY);
+        GOALX = end.getX();
+        GOALY = end.getY();
 
-        openList.add(id(startX, startY));
-        parentPointer.put(id(startX, startY), id(startX, startY));
-        gCost.put(id(startX, startY), 0.0);
+        show(grid, start.getX(), start.getY(), end.getX(), end.getY());
+
+        Cell endCell = null;
+
+        start.setG(0.0);
+        start.setParent(start);
+        openList.add(start);
 
         while (!openList.isEmpty()) {
-            int pointer = openList.get(openList.indexOf(searchMinHEcu(openList)));
+            Cell current = openList.poll();
 
-            int[] poiA = axis(pointer);
-            show(grid, poiA[0], poiA[1]);
+            //show(grid, current.getX(), current.getY());
 
-            if (pointer == goalAxis) {
-                System.out.println("Path distance " + gCost.get(pointer));
+            if (current.getId() == end.getId()) {
+                System.out.println("[TRAVELED DISTANCE EUCLIDEAN] " + current.getG());
+                endCell = current;
                 break;
             }
 
-            openList.remove(openList.indexOf(pointer));
-            closeList.add(pointer);
+            closeList.add(current);
 
-            HashMap<Integer, Double> neighbourCost = new HashMap<>();
-            ArrayList<Integer> neighbours = neighbours(pointer, neighbourCost);
-            gcostNeighbours(neighbourCost, pointer);
+            ArrayList<Cell> neighbours = getNeighbours(current, grid);
+            checkNeighboursEuc(neighbours, closeList, openList, current);
+        }
 
-            addNeighbours(neighbours, neighbourCost, pointer);
+        if (endCell != null) {
+            while (endCell != start) {
+                //System.out.print(endCell.getId() + " -> " + endCell.getParent().getId() + "\n");
+                show(grid, endCell.getX(), endCell.getY(), Color.BLUE);
+                endCell = endCell.getParent();
+            }
         }
     }
 
-    public void pathFindingChebyshev(boolean[][] grid, int startX, int startY, int goalX, int goalY) {
+    public void findPathChebyshev(Cell[][] grid, Cell start, Cell end) {
+        PriorityQueue<Cell> openList = new PriorityQueue<>(new Heuristic());
+        ArrayList<Cell> closeList = new ArrayList<>();
+
         this.grid = grid;
         SIZE = grid.length;
-        GOALX = goalX;
-        GOALY = goalY;
 
-        int goalAxis = id(goalX, goalY);
+        GOALX = end.getX();
+        GOALY = end.getY();
 
-        openList.add(id(startX, startY));
-        parentPointer.put(id(startX, startY), id(startX, startY));
-        gCost.put(id(startX, startY), 0.0);
+        show(grid, start.getX(), start.getY(), end.getX(), end.getY());
+
+        Cell endCell = null;
+
+        start.setG(0.0);
+        start.setParent(start);
+        openList.add(start);
 
         while (!openList.isEmpty()) {
-            int pointer = openList.get(openList.indexOf(searchMinHChe(openList)));
+            Cell current = openList.poll();
 
-            int[] poiA = axis(pointer);
-            show(grid, poiA[0], poiA[1]);
+            //show(grid, current.getX(), current.getY());
 
-            if (pointer == goalAxis) {
-                System.out.println("Path distance " + gCost.get(pointer));
+            if (current.getId() == end.getId()) {
+                System.out.println("[TRAVELED DISTANCE CHEBYSHEV] " + current.getG());
+                endCell = current;
                 break;
             }
 
-            openList.remove(openList.indexOf(pointer));
-            closeList.add(pointer);
+            closeList.add(current);
 
-            HashMap<Integer, Double> neighbourCost = new HashMap<>();
-            ArrayList<Integer> neighbours = neighbours(pointer, neighbourCost);
-            gcostNeighbours(neighbourCost, pointer);
+            ArrayList<Cell> neighbours = getNeighbours(current, grid);
+            checkNeighboursChe(neighbours, closeList, openList, current);
+        }
 
-            addNeighbours(neighbours, neighbourCost, pointer);
+        if (endCell != null) {
+            while (endCell != start) {
+                //System.out.print(endCell.getId() + " -> " + endCell.getParent().getId() + "\n");
+                show(grid, endCell.getX(), endCell.getY(), Color.CYAN);
+                endCell = endCell.getParent();
+            }
         }
     }
 
-    public void pathManttan() {
+    public void checkNeighbourMan(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
+        for (Cell nei : neighbours) {
+            if (closeList.contains(nei)) continue;
 
-    }
-
-    private void addNeighbours(ArrayList<Integer> neighbours, HashMap<Integer, Double> neighbourCost, int parent) {
-        for (int x = 0; x < neighbours.size(); x++) {
-            int n = neighbours.get(x);
-            //System.out.println("[ID] " + n);
-            if (closeList.contains(n)) continue;
-
-            if (!openList.contains(n)) {
-                openList.add(n);
-                gCost.put(n, neighbourCost.get(n));
-                parentPointer.put(n, parent);
-                //System.out.println(parentPointer.toString());
+            if (!openList.contains(nei)) {
+                nei.setParent(parent);
+                nei.setG(parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
+                nei.setH((double) manhattan(nei.getX(), parent.getY(), GOALX, GOALY));
+                openList.add(nei);
             } else {
-                int open = openList.get(openList.indexOf(neighbours.get(x)));
-                int nei = neighbours.get(x);
+                double openG = nei.getG();
+                double neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
 
-                double opee = gCost.get(nei);
-                double nee = neighbourCost.get(open);
-
-                if (nee < opee) {
-                    gCost.put(nei, neighbourCost.get(open));
-                    parentPointer.put(nei, parent);
+                if (neighG < openG) {
+                    nei.setG(neighG);
+                    nei.setParent(parent);
                 }
             }
         }
+    }
+
+    public void checkNeighboursEuc(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
+        for (Cell nei : neighbours) {
+            if (closeList.contains(nei)) continue;
+
+            if (!openList.contains(nei)) {
+                nei.setParent(parent);
+                nei.setG(parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
+                nei.setH(euclidean(nei.getX(), parent.getY(), GOALX, GOALY));
+                openList.add(nei);
+            } else {
+                double openG = nei.getG();
+                double neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
+
+                if (neighG < openG) {
+                    nei.setG(neighG);
+                    nei.setParent(parent);
+                }
+            }
+        }
+    }
+
+    public void checkNeighboursChe(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
+        for (Cell nei : neighbours) {
+            if (closeList.contains(nei)) continue;
+
+            if (!openList.contains(nei)) {
+                nei.setParent(parent);
+                nei.setG(parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
+                nei.setH((double) chebyshev(nei.getX(), parent.getY(), GOALX, GOALY));
+                openList.add(nei);
+            } else {
+                double openG = nei.getG();
+                double neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
+
+                if (neighG < openG) {
+                    nei.setG(neighG);
+                    nei.setParent(parent);
+                }
+            }
+        }
+    }
+
+    private ArrayList<Cell> getNeighbours(Cell parent, Cell[][] grid) {
+        ArrayList<Cell> nei = new ArrayList<>();
+
+        int x = parent.getX();
+        int y = parent.getY();
+
+        //East
+        if (x < SIZE - 1 && open(x + 1, y)) {
+            nei.add(grid[y][x + 1]);
+        }
+        //South East
+        if (x < SIZE - 1 && y < SIZE - 1 && open(x + 1, y + 1)) {
+            nei.add(grid[y + 1][x + 1]);
+        }
+        //South
+        if (y < SIZE - 1 && open(x, y + 1)) {
+            nei.add(grid[y + 1][x]);
+        }
+        //South West
+        if (x > 0 && y < SIZE - 1 && open(x - 1, y + 1)) {
+            nei.add(grid[y + 1][x - 1]);
+        }
+        //West
+        if (x > 0 && open(x - 1, y)) {
+            nei.add(grid[y][x - 1]);
+        }
+        //North West
+        if (x > 0 && y > 0 && open(x - 1, y - 1)) {
+            nei.add(grid[y - 1][x - 1]);
+        }
+        //North
+        if (y > 0 && open(x, y - 1)) {
+            nei.add(grid[y - 1][x]);
+        }
+        //North East
+        if (x + 1 < SIZE - 1 && y > 0 && open(x + 1, y - 1)) {
+            nei.add(grid[y - 1][x + 1]);
+        }
+
+        return nei;
+    }
+
+    private ArrayList<Cell> getNeighboursMan(Cell parent, Cell[][] grid) {
+        ArrayList<Cell> nei = new ArrayList<>();
+
+        int x = parent.getX();
+        int y = parent.getY();
+
+        //East
+        if (x < SIZE - 1 && open(x + 1, y)) {
+            nei.add(grid[y][x + 1]);
+        }
+        //South
+        if (y < SIZE - 1 && open(x, y + 1)) {
+            nei.add(grid[y + 1][x]);
+        }
+        //West
+        if (x > 0 && open(x - 1, y)) {
+            nei.add(grid[y][x - 1]);
+        }
+        //North
+        if (y > 0 && open(x, y - 1)) {
+            nei.add(grid[y - 1][x]);
+        }
+
+        return nei;
     }
 
     private double gcost(int ax, int ay, int bx, int by) {
@@ -198,139 +328,6 @@ public class PathFindingOnSquaredGrid {
         throw new IllegalArgumentException();
     }
 
-    private int searchMinHMan(ArrayList<Integer> arr) {
-        int current = arr.get(0);
-        int parent = parentPointer.get(current);
-        int[] parentAxis = axis(parent);
-        int[] childAxis = axis(current);
-        double minG = gcost(parentAxis[0], parentAxis[1], childAxis[0], childAxis[1]);
-        double minH = manhattan(childAxis[0], childAxis[1], GOALX, GOALY);
-        int minId = current;
-
-        for (int x = 1; x < arr.size(); x++) {
-            current = arr.get(x);
-            parent = parentPointer.get(current);
-            parentAxis = axis(parent);
-            childAxis = axis(current);
-            double G = gcost(parentAxis[0], parentAxis[1], childAxis[0], childAxis[1]);
-            double H = manhattan(childAxis[0], childAxis[1], GOALX, GOALY);
-            if (H < minH) {
-                minH = H;
-                minId = id(childAxis[0], childAxis[1]);
-            }
-        }
-
-        return minId;
-    }
-
-    private int searchMinHEcu(ArrayList<Integer> arr) {
-        int current = arr.get(0);
-        int[] childAxis = axis(current);
-        double minH = euclidean(childAxis[0], childAxis[1], GOALX, GOALY);
-        int minId = current;
-
-        for (int x = 1; x < arr.size(); x++) {
-            current = arr.get(x);
-            childAxis = axis(current);
-            double H = euclidean(childAxis[0], childAxis[1], GOALX, GOALY);
-            if (H < minH) {
-                minH = H;
-                minId = id(childAxis[0], childAxis[1]);
-            }
-        }
-
-        return minId;
-    }
-
-    private int searchMinHChe(ArrayList<Integer> arr) {
-        int current = arr.get(0);
-        int[] childAxis = axis(current);
-        double minH = chebyshev(childAxis[0], childAxis[1], GOALX, GOALY);
-        int minId = current;
-
-        for (int x = 1; x < arr.size(); x++) {
-            current = arr.get(x);
-            childAxis = axis(current);
-            double H = chebyshev(childAxis[0], childAxis[1], GOALX, GOALY);
-            if (H < minH) {
-                minH = H;
-                minId = id(childAxis[0], childAxis[1]);
-            }
-        }
-
-        return minId;
-    }
-
-    private ArrayList<Integer> neighbours(int id, HashMap<Integer, Double> gCost) {
-        ArrayList<Integer> nei = new ArrayList<>();
-
-        int[] ax = axis(id);
-        double G = this.gCost.get(id);
-
-        //East
-        if (ax[0] < SIZE - 1 && open(ax[0] + 1, ax[1])) {
-            nei.add(id(ax[0] + 1, ax[1]));
-            double gcost = gcost(ax[0], ax[1], ax[0] + 1, ax[1]);
-            gCost.put(id(ax[0] + 1, ax[1]), G + gcost);
-        }
-        //South East
-        if (ax[0] < SIZE - 1 && ax[1] < SIZE - 1 && open(ax[0] + 1, ax[1] + 1)) {
-            nei.add(id(ax[0] + 1, ax[1] + 1));
-            double gcost = gcost(ax[0], ax[1], ax[0] + 1, ax[1] + 1);
-            gCost.put(id(ax[0] + 1, ax[1] + 1), G + gcost);
-        }
-        //South
-        if (ax[1] < SIZE - 1 && open(ax[0], ax[1] + 1)) {
-            nei.add(id(ax[0], ax[1] + 1));
-            double gcost = gcost(ax[0], ax[1], ax[0], ax[1] + 1);
-            gCost.put(id(ax[0], ax[1] + 1), G + gcost);
-        }
-        //South West
-        if (ax[0] > 0 && ax[1] < SIZE - 1 && open(ax[0] - 1, ax[1] + 1)) {
-            nei.add(id(ax[0] - 1, ax[1] + 1));
-            double gcost = gcost(ax[0], ax[1], ax[0] - 1, ax[1] + 1);
-            gCost.put(id(ax[0] - 1, ax[1] + 1), G + gcost);
-        }
-        //West
-        if (ax[0] > 0 && open(ax[0] - 1, ax[1])) {
-            nei.add(id(ax[0] - 1, ax[1]));
-            double gcost = gcost(ax[0], ax[1], ax[0] - 1, ax[1]);
-            gCost.put(id(ax[0] - 1, ax[1]), G + gcost);
-        }
-        //North West
-        if (ax[0] > 0 && ax[1] > 0 && open(ax[0] - 1, ax[1] - 1)) {
-            nei.add(id(ax[0] - 1, ax[1] - 1));
-            double gcost = gcost(ax[0], ax[1], ax[0] - 1, ax[1] - 1);
-            gCost.put(id(ax[0] - 1, ax[1] - 1), G + gcost);
-        }
-        //North
-        if (ax[1] > 0 && open(ax[0], ax[1] - 1)) {
-            nei.add(id(ax[0], ax[1] - 1));
-            double gcost = gcost(ax[0], ax[1], ax[0], ax[1] - 1);
-            gCost.put(id(ax[0], ax[1] - 1), G + gcost);
-        }
-        //North East
-        if (ax[0] + 1 < SIZE - 1 && ax[1] > 0 && open(ax[0] + 1, ax[1] - 1)) {
-            nei.add(id(ax[0] + 1, ax[1] - 1));
-            double gcost = gcost(ax[0], ax[1], ax[0] + 1, ax[1] - 1);
-            gCost.put(id(ax[0] + 1, ax[1] - 1), G + gcost);
-        }
-
-        return nei;
-    }
-
-    private void gcostNeighbours(HashMap<Integer, Double> n, int point) {
-        double pg = gCost.get(point);
-        int[] parent = axis(point);
-
-        // Iterating over keys only
-        for (Integer id : n.keySet()) {
-            int[] child = axis(id);
-            double cg = gcost(parent[0], parent[1], child[0], child[1]);
-            n.put(id, pg + cg);
-        }
-    }
-
     private int manhattan(int ax, int ay, int bx, int by) {
         return Math.abs(ax - bx) + Math.abs(ay - by);
     }
@@ -343,7 +340,11 @@ public class PathFindingOnSquaredGrid {
         return (Math.max(Math.abs(ax - bx), Math.abs(ay - by)));
     }
 
-    private static int id(int x, int y) {
+    private int id(int x, int y) {
+        return SIZE * y + x;
+    }
+
+    private static int id(int x, int y, int SIZE) {
         return SIZE * y + x;
     }
 
@@ -354,7 +355,7 @@ public class PathFindingOnSquaredGrid {
     }
 
     private boolean open(int x, int y) {
-        return grid[x][y];
+        return grid[y][x].isOpen();
     }
 
     private static void clear() {
@@ -445,56 +446,45 @@ public class PathFindingOnSquaredGrid {
                 else StdDraw.filledSquare(j, N - i - 1, .5);
     }
 
-    // draw the N-by-N boolean matrix to standard draw, including the points A (x1, y1) and B (x2,y2) to be marked by a circle
-    public static void show(boolean[][] a, boolean which, int x1, int y1, int x2, int y2) {
+    // draw the N-by-N boolean matrix to standard draw
+    public static void show(Cell[][] a, int x1, int y1, int x2, int y2) {
         int N = a.length;
         StdDraw.setXscale(-1, N);
         StdDraw.setYscale(-1, N);
         StdDraw.setPenColor(StdDraw.BLACK);
         for (int i = 0; i < N; i++)
             for (int j = 0; j < N; j++)
-                if (a[i][j] == which)
+                if (a[i][j].isOpen())
                     if ((i == x1 && j == y1) || (i == x2 && j == y2)) {
                         StdDraw.circle(j, N - i - 1, .5);
                     } else StdDraw.square(j, N - i - 1, .5);
                 else StdDraw.filledSquare(j, N - i - 1, .5);
     }
 
-    public static void show(boolean[][] a, int x1, int y1) {
-        StdDraw.setPenColor(StdDraw.ORANGE);
-        StdDraw.filledSquare(y1, a.length - x1 - 1, .5);
-        /*int N = a.length;
-        StdDraw.setXscale(-1, N);
-        StdDraw.setYscale(-1, N);
-        StdDraw.setPenColor(StdDraw.BLACK);
-        for (int i = 0; i < N; i++)
-            for (int j = 0; j < N; j++)
-                if (a[i][j] == which)
-                    if ((i == x1 && j == y1)) {
-                        StdDraw.setPenColor(StdDraw.ORANGE);
-                        StdDraw.filledSquare(j, N - i - 1, .5);
-                    } else StdDraw.square(j, N - i - 1, .5);
-                else{
-                    StdDraw.setPenColor(StdDraw.BLACK);
-                    StdDraw.filledSquare(j, N - i - 1, .5);
-                }*/
+    public static void show(Cell[][] a, int x1, int y1, Color color) {
+        StdDraw.setPenColor(color);
+        StdDraw.filledSquare(x1, a.length - y1 - 1, .5);
     }
 
     // return a random N-by-N boolean matrix, where each entry is
     // true with probability p
-    public static boolean[][] random(int N, double p) {
-        boolean[][] a = new boolean[N][N];
-        for (int i = 0; i < N; i++)
-            for (int j = 0; j < N; j++)
-                a[i][j] = StdRandom.bernoulli(p);
-        return a;
-    }
-
     public static Cell[][] randomCell(int N, double p) {
         Cell[][] a = new Cell[N][N];
-        for (int i = 0; i < N; i++)
-            for (int j = 0; j < N; j++)
-                a[i][j] = new Cell(j, i, id(j, i), StdRandom.bernoulli(p));
+
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < N; j++) {
+                int id = id(j, i, a.length);
+                a[i][j] = new Cell(j, i, id, StdRandom.bernoulli(p));
+            }
+        }
+
+        for (int x = 0; x < N; x++) {
+            for (int y = 0; y < N; y++) {
+                System.out.print(a[x][y].getId() + " ");
+            }
+            System.out.println();
+        }
+
         return a;
     }
 
@@ -535,12 +525,6 @@ public class PathFindingOnSquaredGrid {
         // The lower the second parameter, the more obstacles (black cells) are generated
         //boolean[][] randomlyGenMatrix = random(100, 0.8);
 
-        /*for (int x = 0; x < randomlyGenMatrix.length; x++) {
-            for (int y = 0; y < randomlyGenMatrix.length; y++) {
-                randomlyGenMatrix[x][y] = true;
-            }
-        }*/
-
         Cell[][] randomlyGenMatrix = randomCell(100, 0.8);
 
         printCell(randomlyGenMatrix);
@@ -570,13 +554,20 @@ public class PathFindingOnSquaredGrid {
         System.out.print("Enter j for B > ");
         int Bj = in.nextInt();
 
-        /*Scanner sc = new Scanner(System.in);
+        PathFindingOnSquaredGrid pathfinding = new PathFindingOnSquaredGrid();
+
+        Cell start = new Cell(Ai, Aj, id(Ai, Aj, randomlyGenMatrix.length), true);
+        Cell end = new Cell(Bi, Bj, id(Bi, Bj, randomlyGenMatrix.length), true);
+
+        //pathfinding.findPathManhattan(randomlyGenMatrix, start, end);
+
+        Scanner sc = new Scanner(System.in);
 
         // Start the clock ticking in order to capture the time being spent on inputting the coordinates
         // You should position this command accordingly in order to perform the algorithmic analysis
         Stopwatch timer = new Stopwatch();
 
-        new PathFindingOnSquaredGrid().pathFindingManhattan(randomlyGenMatrix, Aj, Ai, Bj, Bi);
+        pathfinding.findPathManhattan(randomlyGenMatrix, start, end);
 
         // THIS IS AN EXAMPLE ONLY ON HOW TO USE THE JAVA INTERNAL WATCH
         // Stop the clock ticking in order to capture the time being spent on inputting the coordinates
@@ -589,7 +580,7 @@ public class PathFindingOnSquaredGrid {
 
         timer = new Stopwatch();
 
-        new PathFindingOnSquaredGrid().pathFindingEuclidean(randomlyGenMatrix, Aj, Ai, Bj, Bi);
+        pathfinding.findPathEuclidean(randomlyGenMatrix, start, end);
         StdOut.println("Elapsed time Euclidean= " + timer.elapsedTime());
 
         clear();
@@ -598,11 +589,23 @@ public class PathFindingOnSquaredGrid {
 
         timer = new Stopwatch();
 
-        new PathFindingOnSquaredGrid().pathFindingChebyshev(randomlyGenMatrix, Aj, Ai, Bj, Bi);
+        pathfinding.findPathChebyshev(randomlyGenMatrix, start, end);
 
-        StdOut.println("Elapsed time Chebyshev= " + timer.elapsedTime());*/
+        StdOut.println("Elapsed time Chebyshev= " + timer.elapsedTime());
 
         //show(randomlyGenMatrix, true, Aj, Ai, Bj, Bi);
     }
 
+    //TODO didnt understand
+    class Heuristic implements Comparator<Object> {
+
+        @Override
+        public int compare(Object o1, Object o2) {
+
+            Cell cell1 = (Cell) o1;
+            Cell cell2 = (Cell) o2;
+
+            return Double.compare(cell1.getH(), cell2.getH());
+        }
+    }
 }
