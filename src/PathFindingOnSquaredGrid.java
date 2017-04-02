@@ -8,27 +8,33 @@ import java.util.*;
  *************************************************************************/
 
 public class PathFindingOnSquaredGrid {
-
-    private static HashMap<Integer, Integer> parentPointer;
-    private static HashMap<Integer, Double> gCost;
-    private static ArrayList<Integer> closeList, openList;
     private static Cell[][] grid;
     private static int SIZE;
     private static int GOALX, GOALY;
 
-    static {
-        parentPointer = new HashMap<>();
-        gCost = new HashMap<>();
-        closeList = new ArrayList<>();
-        openList = new ArrayList<>();
+    /**
+     * @param grid N*N array
+     */
+    public PathFindingOnSquaredGrid(Cell[][] grid) {
+        if (grid == null) {
+            throw new NullPointerException();
+        }
+        if (grid[0].length != grid.length) {
+            throw new IllegalArgumentException();
+        }
+        this.grid = grid;
+        this.SIZE = grid.length;
     }
 
-    public void findPathManhattan(Cell[][] grid, Cell start, Cell end) {
+    /**
+     * Find shortest path using Manhattan
+     *
+     * @param start path finding start Cell
+     * @param end   path finding end Cell
+     */
+    public void findPathManhattan(Cell start, Cell end) {
         PriorityQueue<Cell> openList = new PriorityQueue<>(new Heuristic());
         ArrayList<Cell> closeList = new ArrayList<>();
-
-        this.grid = grid;
-        SIZE = grid.length;
 
         GOALX = end.getX();
         GOALY = end.getY();
@@ -64,15 +70,20 @@ public class PathFindingOnSquaredGrid {
                 show(grid, endCell.getX(), endCell.getY(), Color.green);
                 endCell = endCell.getParent();
             }
+        } else {
+            System.out.println("[THERE IS NO PATH FOR THESE AXIS]");
         }
     }
 
-    public void findPathEuclidean(Cell[][] grid, Cell start, Cell end) {
+    /**
+     * Finding shortest path using Euclidean
+     *
+     * @param start path finding start Cell
+     * @param end   path finding end Cell
+     */
+    public void findPathEuclidean(Cell start, Cell end) {
         PriorityQueue<Cell> openList = new PriorityQueue<>(new Heuristic());
         ArrayList<Cell> closeList = new ArrayList<>();
-
-        this.grid = grid;
-        SIZE = grid.length;
 
         GOALX = end.getX();
         GOALY = end.getY();
@@ -108,15 +119,20 @@ public class PathFindingOnSquaredGrid {
                 show(grid, endCell.getX(), endCell.getY(), Color.BLUE);
                 endCell = endCell.getParent();
             }
+        } else {
+            System.out.println("[THERE IS NO PATH FOR THESE AXIS]");
         }
     }
 
-    public void findPathChebyshev(Cell[][] grid, Cell start, Cell end) {
+    /**
+     * Finding shortest path using Chebyshev
+     *
+     * @param start path finding start Cell
+     * @param end   path finding end Cell
+     */
+    public void findPathChebyshev(Cell start, Cell end) {
         PriorityQueue<Cell> openList = new PriorityQueue<>(new Heuristic());
         ArrayList<Cell> closeList = new ArrayList<>();
-
-        this.grid = grid;
-        SIZE = grid.length;
 
         GOALX = end.getX();
         GOALY = end.getY();
@@ -152,9 +168,21 @@ public class PathFindingOnSquaredGrid {
                 show(grid, endCell.getX(), endCell.getY(), Color.CYAN);
                 endCell = endCell.getParent();
             }
+        } else {
+            System.out.println("[THERE IS NO PATH FOR THESE AXIS]");
         }
     }
 
+    /**
+     * Check adjacent Cells and add to openList
+     * If already added compare G cost with openList Cell's G cost
+     * Calculating H value using Manhattan distance
+     *
+     * @param neighbours Adjacent Cells of current Cell
+     * @param closeList  Cells already searched
+     * @param openList   Adjacent Cells previously added
+     * @param parent     Current Cell
+     */
     public void checkNeighbourMan(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
         for (Cell nei : neighbours) {
             if (closeList.contains(nei)) continue;
@@ -176,6 +204,16 @@ public class PathFindingOnSquaredGrid {
         }
     }
 
+    /**
+     * Check adjacent Cells and add to openList
+     * If already added compare G cost with openList Cell's G cost
+     * Calculating H value using Euclidean distance
+     *
+     * @param neighbours Adjacent Cells of current Cell
+     * @param closeList  Cells already searched
+     * @param openList   Adjacent Cells previously added
+     * @param parent     Current Cell
+     */
     public void checkNeighboursEuc(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
         for (Cell nei : neighbours) {
             if (closeList.contains(nei)) continue;
@@ -197,6 +235,16 @@ public class PathFindingOnSquaredGrid {
         }
     }
 
+    /**
+     * Check adjacent Cells and add to openList
+     * If already added compare G cost with openList Cell's G cost
+     * Calculating H value using Chebyshev distance
+     *
+     * @param neighbours Adjacent Cells of current Cell
+     * @param closeList  Cells already searched
+     * @param openList   Adjacent Cells previously added
+     * @param parent     Current Cell
+     */
     public void checkNeighboursChe(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
         for (Cell nei : neighbours) {
             if (closeList.contains(nei)) continue;
@@ -218,6 +266,14 @@ public class PathFindingOnSquaredGrid {
         }
     }
 
+    /**
+     * Get adjacent Cells of current Cell
+     * Search in 8 directions
+     *
+     * @param parent current Cell
+     * @param grid   Matrix to search
+     * @return adjacent Cells
+     */
     private ArrayList<Cell> getNeighbours(Cell parent, Cell[][] grid) {
         ArrayList<Cell> nei = new ArrayList<>();
 
@@ -260,6 +316,14 @@ public class PathFindingOnSquaredGrid {
         return nei;
     }
 
+    /**
+     * Get adjacent Cells of current Cell
+     * Search in 4 directions
+     *
+     * @param parent current Cell
+     * @param grid   Matrix to search
+     * @return adjacent Cells
+     */
     private ArrayList<Cell> getNeighboursMan(Cell parent, Cell[][] grid) {
         ArrayList<Cell> nei = new ArrayList<>();
 
@@ -286,9 +350,19 @@ public class PathFindingOnSquaredGrid {
         return nei;
     }
 
+    /**
+     * Calculate G cost between parent and current Axis
+     *
+     * @param ax parent X
+     * @param ay parent Y
+     * @param bx current X
+     * @param by current Y
+     * @return G cost
+     */
     private double gcost(int ax, int ay, int bx, int by) {
         double DIAGONAL = 1.4;
         double HOR_VERTI = 1;
+
         //south east
         if (ax + 1 == bx && ay + 1 == by) {
             return DIAGONAL;
@@ -340,29 +414,19 @@ public class PathFindingOnSquaredGrid {
         return (Math.max(Math.abs(ax - bx), Math.abs(ay - by)));
     }
 
-    private int id(int x, int y) {
+    protected static int id(int x, int y, int SIZE) {
         return SIZE * y + x;
     }
 
-    private static int id(int x, int y, int SIZE) {
-        return SIZE * y + x;
-    }
-
-    private int[] axis(int id) {
-        int y = id / SIZE;
-        int x = id - (y * SIZE);
-        return new int[]{x, y};
-    }
-
+    /**
+     * Check given Axis is open
+     *
+     * @param x X value
+     * @param y Y value
+     * @return Id
+     */
     private boolean open(int x, int y) {
         return grid[y][x].isOpen();
-    }
-
-    private static void clear() {
-        parentPointer.clear();
-        gCost.clear();
-        closeList.clear();
-        openList.clear();
     }
 
     // given an N-by-N matrix of open cells, return an N-by-N matrix
@@ -452,13 +516,9 @@ public class PathFindingOnSquaredGrid {
         StdDraw.setXscale(-1, N);
         StdDraw.setYscale(-1, N);
         StdDraw.setPenColor(StdDraw.BLACK);
-        for (int i = 0; i < N; i++)
-            for (int j = 0; j < N; j++)
-                if (a[i][j].isOpen())
-                    if ((i == x1 && j == y1) || (i == x2 && j == y2)) {
-                        StdDraw.circle(j, N - i - 1, .5);
-                    } else StdDraw.square(j, N - i - 1, .5);
-                else StdDraw.filledSquare(j, N - i - 1, .5);
+
+        StdDraw.circle(y1, N - x1 - 1, .5);
+        StdDraw.circle(y2, N - x2 - 1, .5);
     }
 
     public static void show(Cell[][] a, int x1, int y1, Color color) {
@@ -477,14 +537,6 @@ public class PathFindingOnSquaredGrid {
                 a[i][j] = new Cell(j, i, id, StdRandom.bernoulli(p));
             }
         }
-
-        for (int x = 0; x < N; x++) {
-            for (int y = 0; y < N; y++) {
-                System.out.print(a[x][y].getId() + " ");
-            }
-            System.out.println();
-        }
-
         return a;
     }
 
@@ -525,9 +577,9 @@ public class PathFindingOnSquaredGrid {
         // The lower the second parameter, the more obstacles (black cells) are generated
         //boolean[][] randomlyGenMatrix = random(100, 0.8);
 
-        Cell[][] randomlyGenMatrix = randomCell(100, 0.8);
+        Cell[][] randomlyGenMatrix = randomCell(50, 0.8);
 
-        printCell(randomlyGenMatrix);
+        //printCell(randomlyGenMatrix);
         showCell(randomlyGenMatrix);
 
        /* System.out.println();
@@ -542,19 +594,41 @@ public class PathFindingOnSquaredGrid {
         // THIS IS AN EXAMPLE ONLY ON HOW TO USE THE JAVA INTERNAL WATCH
 
         Scanner in = new Scanner(System.in);
-        System.out.print("Enter i for A > ");
-        int Ai = in.nextInt();
 
-        System.out.print("Enter j for A > ");
-        int Aj = in.nextInt();
+        int Ai, Aj, Bi, Bj;
 
-        System.out.print("Enter i for B > ");
-        int Bi = in.nextInt();
+        boolean isEmpty = false;
+        do {
+            System.out.print("Enter i for A > ");
+            Ai = in.nextInt();
 
-        System.out.print("Enter j for B > ");
-        int Bj = in.nextInt();
+            System.out.print("Enter j for A > ");
+            Aj = in.nextInt();
 
-        PathFindingOnSquaredGrid pathfinding = new PathFindingOnSquaredGrid();
+            if (randomlyGenMatrix[Aj][Ai].isOpen()) {
+                isEmpty = true;
+            } else {
+                System.out.println("Axis is closed Try another one");
+            }
+        } while (!isEmpty);
+
+        isEmpty = false;
+
+        do {
+            System.out.print("Enter i for B > ");
+            Bi = in.nextInt();
+
+            System.out.print("Enter j for B > ");
+            Bj = in.nextInt();
+
+            if (randomlyGenMatrix[Bj][Bi].isOpen()) {
+                isEmpty = true;
+            } else {
+                System.out.println("Axis is closed Try another one");
+            }
+        } while (!isEmpty);
+
+        PathFindingOnSquaredGrid pathfinding = new PathFindingOnSquaredGrid(randomlyGenMatrix);
 
         Cell start = new Cell(Ai, Aj, id(Ai, Aj, randomlyGenMatrix.length), true);
         Cell end = new Cell(Bi, Bj, id(Bi, Bj, randomlyGenMatrix.length), true);
@@ -567,29 +641,25 @@ public class PathFindingOnSquaredGrid {
         // You should position this command accordingly in order to perform the algorithmic analysis
         Stopwatch timer = new Stopwatch();
 
-        pathfinding.findPathManhattan(randomlyGenMatrix, start, end);
+        pathfinding.findPathManhattan(start, end);
 
         // THIS IS AN EXAMPLE ONLY ON HOW TO USE THE JAVA INTERNAL WATCH
         // Stop the clock ticking in order to capture the time being spent on inputting the coordinates
         // You should position this command accordingly in order to perform the algorithmic analysis
         StdOut.println("Elapsed time Manhattan = " + timer.elapsedTime());
 
-        clear();
-
         sc.nextInt();
 
         timer = new Stopwatch();
 
-        pathfinding.findPathEuclidean(randomlyGenMatrix, start, end);
+        pathfinding.findPathEuclidean(start, end);
         StdOut.println("Elapsed time Euclidean= " + timer.elapsedTime());
 
-        clear();
-
         sc.nextInt();
 
         timer = new Stopwatch();
 
-        pathfinding.findPathChebyshev(randomlyGenMatrix, start, end);
+        pathfinding.findPathChebyshev(start, end);
 
         StdOut.println("Elapsed time Chebyshev= " + timer.elapsedTime());
 
