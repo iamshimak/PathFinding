@@ -13,13 +13,15 @@ public class PathFindingOnSquaredGrid {
     private static int GOALX, GOALY;
 
     /**
-     * @param grid N*N array
+     * Gets and N by N Cell[][]
+     *
+     * @param grid grid
      */
     public PathFindingOnSquaredGrid(Cell[][] grid) {
         if (grid == null) {
             throw new NullPointerException();
         }
-        if (grid[0].length != grid.length) {
+        if (grid.length != grid[0].length) {
             throw new IllegalArgumentException();
         }
         this.grid = grid;
@@ -39,22 +41,17 @@ public class PathFindingOnSquaredGrid {
         GOALX = end.getX();
         GOALY = end.getY();
 
-        show(grid, start.getX(), start.getY(), end.getX(), end.getY());
+        Cell lastCell = null;
 
-        Cell endCell = null;
-
-        start.setG(0.0);
+        start.setG(0);
         start.setParent(start);
         openList.add(start);
 
         while (!openList.isEmpty()) {
             Cell current = openList.poll();
 
-            //show(grid, current.getX(), current.getY());
-
             if (current.getId() == end.getId()) {
-                System.out.println("[TRAVELED DISTANCE MANHATTAN] " + current.getG());
-                endCell = current;
+                lastCell = current;
                 break;
             }
 
@@ -64,15 +61,17 @@ public class PathFindingOnSquaredGrid {
             checkNeighbourMan(neighbours, closeList, openList, current);
         }
 
-        if (endCell != null) {
-            while (endCell != start) {
+        if (lastCell != null) {
+            System.out.println("\nTraveled distance (G cost) : " + lastCell.getG());
+            while (lastCell != start) {
                 //System.out.print(endCell.getId() + " -> " + endCell.getParent().getId() + "\n");
-                show(grid, endCell.getX(), endCell.getY(), Color.green);
-                endCell = endCell.getParent();
+                drawLine(lastCell.getParent().getX(), lastCell.getParent().getY(), lastCell.getX(), lastCell.getY());
+                lastCell = lastCell.getParent();
             }
         } else {
-            System.out.println("[THERE IS NO PATH FOR THESE AXIS]");
+            System.out.println("\nNo path found for this axises");
         }
+        drawCircles(grid, start.getX(), start.getY(), end.getX(), end.getY());
     }
 
     /**
@@ -88,22 +87,19 @@ public class PathFindingOnSquaredGrid {
         GOALX = end.getX();
         GOALY = end.getY();
 
-        show(grid, start.getX(), start.getY(), end.getX(), end.getY());
+        Cell lastCell = null;
 
-        Cell endCell = null;
-
-        start.setG(0.0);
+        start.setG(0);
         start.setParent(start);
         openList.add(start);
 
         while (!openList.isEmpty()) {
             Cell current = openList.poll();
 
-            //show(grid, current.getX(), current.getY());
+            //drawCircle(grid, current.getX(), current.getY());
 
             if (current.getId() == end.getId()) {
-                System.out.println("[TRAVELED DISTANCE EUCLIDEAN] " + current.getG());
-                endCell = current;
+                lastCell = current;
                 break;
             }
 
@@ -113,15 +109,17 @@ public class PathFindingOnSquaredGrid {
             checkNeighboursEuc(neighbours, closeList, openList, current);
         }
 
-        if (endCell != null) {
-            while (endCell != start) {
-                //System.out.print(endCell.getId() + " -> " + endCell.getParent().getId() + "\n");
-                show(grid, endCell.getX(), endCell.getY(), Color.BLUE);
-                endCell = endCell.getParent();
+        if (lastCell != null) {
+            System.out.println("\nTraveled distance (G cost) :" + lastCell.getG());
+            while (lastCell != start) {
+                //System.out.print(lastCell.getId() + " -> " + lastCell.getParent().getId() + "\n");
+                drawLine(lastCell.getParent().getX(), lastCell.getParent().getY(), lastCell.getX(), lastCell.getY());
+                lastCell = lastCell.getParent();
             }
         } else {
-            System.out.println("[THERE IS NO PATH FOR THESE AXIS]");
+            System.out.println("\nThere is no path between these axises");
         }
+        drawCircles(grid, start.getX(), start.getY(), end.getX(), end.getY());
     }
 
     /**
@@ -137,22 +135,18 @@ public class PathFindingOnSquaredGrid {
         GOALX = end.getX();
         GOALY = end.getY();
 
-        show(grid, start.getX(), start.getY(), end.getX(), end.getY());
+        Cell lastCell = null;
 
-        Cell endCell = null;
-
-        start.setG(0.0);
+        start.setG(0);
         start.setParent(start);
         openList.add(start);
 
         while (!openList.isEmpty()) {
             Cell current = openList.poll();
 
-            //show(grid, current.getX(), current.getY());
-
             if (current.getId() == end.getId()) {
-                System.out.println("[TRAVELED DISTANCE CHEBYSHEV] " + current.getG());
-                endCell = current;
+                System.out.println("Traveled distance in Chebyshev: " + current.getG());
+                lastCell = current;
                 break;
             }
 
@@ -162,15 +156,16 @@ public class PathFindingOnSquaredGrid {
             checkNeighboursChe(neighbours, closeList, openList, current);
         }
 
-        if (endCell != null) {
-            while (endCell != start) {
-                //System.out.print(endCell.getId() + " -> " + endCell.getParent().getId() + "\n");
-                show(grid, endCell.getX(), endCell.getY(), Color.CYAN);
-                endCell = endCell.getParent();
+        if (lastCell != null) {
+            while (lastCell != start) {
+                //System.out.print(lastCell.getId() + " -> " + lastCell.getParent().getId() + "\n");
+                drawLine(lastCell.getParent().getX(), lastCell.getParent().getY(), lastCell.getX(), lastCell.getY());
+                lastCell = lastCell.getParent();
             }
         } else {
-            System.out.println("[THERE IS NO PATH FOR THESE AXIS]");
+            System.out.println("There is no path for these axises\n");
         }
+        drawCircles(grid, start.getX(), start.getY(), end.getX(), end.getY());
     }
 
     /**
@@ -184,8 +179,10 @@ public class PathFindingOnSquaredGrid {
      * @param parent     Current Cell
      */
     public void checkNeighbourMan(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
+        drawCircle(grid, parent.getX(), parent.getY(), Color.ORANGE);
         for (Cell nei : neighbours) {
             if (closeList.contains(nei)) continue;
+            drawCircle(grid, nei.getX(), nei.getY(), Color.YELLOW);
 
             if (!openList.contains(nei)) {
                 nei.setParent(parent);
@@ -193,8 +190,8 @@ public class PathFindingOnSquaredGrid {
                 nei.setH((double) manhattan(nei.getX(), parent.getY(), GOALX, GOALY));
                 openList.add(nei);
             } else {
-                double openG = nei.getG();
-                double neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
+                int openG = nei.getG();
+                int neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
 
                 if (neighG < openG) {
                     nei.setG(neighG);
@@ -215,8 +212,10 @@ public class PathFindingOnSquaredGrid {
      * @param parent     Current Cell
      */
     public void checkNeighboursEuc(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
+        drawCircle(grid, parent.getX(), parent.getY(), Color.ORANGE);
         for (Cell nei : neighbours) {
             if (closeList.contains(nei)) continue;
+            drawCircle(grid, nei.getX(), nei.getY(), Color.YELLOW);
 
             if (!openList.contains(nei)) {
                 nei.setParent(parent);
@@ -224,8 +223,8 @@ public class PathFindingOnSquaredGrid {
                 nei.setH(euclidean(nei.getX(), parent.getY(), GOALX, GOALY));
                 openList.add(nei);
             } else {
-                double openG = nei.getG();
-                double neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
+                int openG = nei.getG();
+                int neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
 
                 if (neighG < openG) {
                     nei.setG(neighG);
@@ -246,8 +245,10 @@ public class PathFindingOnSquaredGrid {
      * @param parent     Current Cell
      */
     public void checkNeighboursChe(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
+        drawCircle(grid, parent.getX(), parent.getY(), Color.ORANGE);
         for (Cell nei : neighbours) {
             if (closeList.contains(nei)) continue;
+            drawCircle(grid, nei.getX(), nei.getY(), Color.YELLOW);
 
             if (!openList.contains(nei)) {
                 nei.setParent(parent);
@@ -255,8 +256,8 @@ public class PathFindingOnSquaredGrid {
                 nei.setH((double) chebyshev(nei.getX(), parent.getY(), GOALX, GOALY));
                 openList.add(nei);
             } else {
-                double openG = nei.getG();
-                double neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
+                int openG = nei.getG();
+                int neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
 
                 if (neighG < openG) {
                     nei.setG(neighG);
@@ -359,9 +360,9 @@ public class PathFindingOnSquaredGrid {
      * @param by current Y
      * @return G cost
      */
-    private double gcost(int ax, int ay, int bx, int by) {
-        double DIAGONAL = 1.4;
-        double HOR_VERTI = 1;
+    private int gcost(int ax, int ay, int bx, int by) {
+        int DIAGONAL = 14;
+        int HOR_VERTI = 10;
 
         //south east
         if (ax + 1 == bx && ay + 1 == by) {
@@ -402,20 +403,64 @@ public class PathFindingOnSquaredGrid {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * Calculate H cost using Manhattan distance
+     *
+     * @param ax parent X
+     * @param ay parent Y
+     * @param bx current X
+     * @param by current Y
+     * @return H cost
+     * @throws IllegalArgumentException
+     */
     private int manhattan(int ax, int ay, int bx, int by) {
         return Math.abs(ax - bx) + Math.abs(ay - by);
     }
 
+    /**
+     * Calculate H cost using Euclidean distance
+     *
+     * @param ax parent X
+     * @param ay parent Y
+     * @param bx current X
+     * @param by current Y
+     * @return H cost
+     * @throws IllegalArgumentException
+     */
     private double euclidean(int ax, int ay, int bx, int by) {
         return Math.sqrt(Math.pow(ax - bx, 2) + Math.pow(ay - by, 2));
     }
 
+    /**
+     * Calculate H cost using Cehbyshev distance
+     *
+     * @param ax parent X
+     * @param ay parent Y
+     * @param bx current X
+     * @param by current Y
+     * @return H cost
+     * @throws IllegalArgumentException
+     */
     private int chebyshev(int ax, int ay, int bx, int by) {
         return (Math.max(Math.abs(ax - bx), Math.abs(ay - by)));
     }
 
+    /**
+     * Calculate Cell's Id
+     *
+     * @param x    X value
+     * @param y    Y value
+     * @param SIZE grid size
+     * @return id
+     */
     protected static int id(int x, int y, int SIZE) {
         return SIZE * y + x;
+    }
+
+    private int[] axis(int id) {
+        int y = id / SIZE;
+        int x = id - (y * SIZE);
+        return new int[]{x, y};
     }
 
     /**
@@ -429,105 +474,62 @@ public class PathFindingOnSquaredGrid {
         return grid[y][x].isOpen();
     }
 
-    // given an N-by-N matrix of open cells, return an N-by-N matrix
-    // of cells reachable from the top
-    public static boolean[][] flow(boolean[][] open) {
-        int N = open.length;
-
-        boolean[][] full = new boolean[N][N];
-        for (int j = 0; j < N; j++) {
-            flow(open, full, 0, j);
-        }
-
-        return full;
-    }
-
-    // determine set of open/blocked cells using depth first search
-    public static void flow(boolean[][] open, boolean[][] full, int i, int j) {
-        int N = open.length;
-
-        // base cases
-        if (i < 0 || i >= N) return;    // invalid row
-        if (j < 0 || j >= N) return;    // invalid column
-        if (!open[i][j]) return;        // not an open cell
-        if (full[i][j]) return;         // already marked as open
-
-        full[i][j] = true;
-
-        flow(open, full, i + 1, j);   // down
-        flow(open, full, i, j + 1);   // right
-        flow(open, full, i, j - 1);   // left
-        flow(open, full, i - 1, j);   // up
-    }
-
-    // does the system percolate?
-    public static boolean percolates(boolean[][] open) {
-        int N = open.length;
-
-        boolean[][] full = flow(open);
-        for (int j = 0; j < N; j++) {
-            if (full[N - 1][j]) return true;
-        }
-
-        return false;
-    }
-
-    // does the system percolate vertically in a direct way?
-    public static boolean percolatesDirect(boolean[][] open) {
-        int N = open.length;
-
-        boolean[][] full = flow(open);
-        int directPerc = 0;
-        for (int j = 0; j < N; j++) {
-            if (full[N - 1][j]) {
-                // StdOut.println("Hello");
-                directPerc = 1;
-                int rowabove = N - 2;
-                for (int i = rowabove; i >= 0; i--) {
-                    if (full[i][j]) {
-                        // StdOut.println("i: " + i + " j: " + j + " " + full[i][j]);
-                        directPerc++;
-                    } else break;
-                }
-            }
-        }
-
-        // StdOut.println("Direct Percolation is: " + directPerc);
-        if (directPerc == N) return true;
-        else return false;
-    }
-
-    // draw the N-by-N boolean matrix to standard draw
-    public static void show(boolean[][] a, boolean which) {
+    /**
+     * Draw 2 circles in the grid
+     *
+     * @param a  grid
+     * @param x1 first circle's x
+     * @param y1 first circle's y
+     * @param x2 second circle's x
+     * @param y2 second circle's y
+     */
+    public static void drawCircles(Cell[][] a, int x1, int y1, int x2, int y2) {
         int N = a.length;
         StdDraw.setXscale(-1, N);
         StdDraw.setYscale(-1, N);
-        StdDraw.setPenColor(StdDraw.BLACK);
-        for (int i = 0; i < N; i++)
-            for (int j = 0; j < N; j++)
-                if (a[i][j] == which)
-                    StdDraw.square(j, N - i - 1, .5);
-                else StdDraw.filledSquare(j, N - i - 1, .5);
+
+        StdDraw.setPenColor(StdDraw.BOOK_BLUE);
+        StdDraw.filledCircle(x1, N - y1 - 1, .5);
+
+        StdDraw.setPenColor(StdDraw.GREEN);
+        StdDraw.filledCircle(x2, N - y2 - 1, .5);
     }
 
-    // draw the N-by-N boolean matrix to standard draw
-    public static void show(Cell[][] a, int x1, int y1, int x2, int y2) {
-        int N = a.length;
-        StdDraw.setXscale(-1, N);
-        StdDraw.setYscale(-1, N);
-        StdDraw.setPenColor(StdDraw.BLACK);
-
-        StdDraw.circle(y1, N - x1 - 1, .5);
-        StdDraw.circle(y2, N - x2 - 1, .5);
-    }
-
-    public static void show(Cell[][] a, int x1, int y1, Color color) {
+    /**
+     * Draw circle in the grid
+     *
+     * @param a     grid
+     * @param x1    circle's x
+     * @param y1    circle's y
+     * @param color circle's colour
+     */
+    public static void drawCircle(Cell[][] a, int x1, int y1, Color color) {
         StdDraw.setPenColor(color);
         StdDraw.filledSquare(x1, a.length - y1 - 1, .5);
     }
 
-    // return a random N-by-N boolean matrix, where each entry is
-    // true with probability p
+    /**
+     * Draw a line between 2 cells
+     *
+     * @param x1 first cell's x
+     * @param y1 first cell's y
+     * @param x2 second cell's x
+     * @param y2 second cell's y
+     */
+    public static void drawLine(int x1, int y1, int x2, int y2) {
+        StdDraw.setPenColor(Color.RED);
+        StdDraw.setPenRadius(0.01);
+        StdDraw.line(x2, SIZE - y2 - 1, x1, SIZE - y1 - 1);
+    }
+
+    /**
+     * Populate a random N-by-N Cell matrix
+     * Where each entry is true with probability
+     *
+     * @param N size
+     * @param p probability
+     * @return Cell[][] matrix
+     */
     public static Cell[][] randomCell(int N, double p) {
         Cell[][] a = new Cell[N][N];
 
@@ -569,101 +571,162 @@ public class PathFindingOnSquaredGrid {
                 else StdDraw.filledSquare(j, N - i - 1, .5);
     }
 
-    // test client
     public static void main(String[] args) {
-        // boolean[][] open = StdArrayIO.readBoolean2D();
-
-        // The following will generate a 10x10 squared grid with relatively few obstacles in it
-        // The lower the second parameter, the more obstacles (black cells) are generated
-        //boolean[][] randomlyGenMatrix = random(100, 0.8);
-
-        Cell[][] randomlyGenMatrix = randomCell(50, 0.8);
-
-        //printCell(randomlyGenMatrix);
-        showCell(randomlyGenMatrix);
-
-       /* System.out.println();
-        System.out.println("The system percolates: " + percolates(randomlyGenMatrix));
-
-        System.out.println();
-        System.out.println("The system percolates directly: " + percolatesDirect(randomlyGenMatrix));
-        System.out.println();*/
-
-        // Reading the coordinates for points A and B on the input squared grid.
-
-        // THIS IS AN EXAMPLE ONLY ON HOW TO USE THE JAVA INTERNAL WATCH
-
-        Scanner in = new Scanner(System.in);
-
-        int Ai, Aj, Bi, Bj;
-
-        boolean isEmpty = false;
-        do {
-            System.out.print("Enter i for A > ");
-            Ai = in.nextInt();
-
-            System.out.print("Enter j for A > ");
-            Aj = in.nextInt();
-
-            if (randomlyGenMatrix[Aj][Ai].isOpen()) {
-                isEmpty = true;
-            } else {
-                System.out.println("Axis is closed Try another one");
-            }
-        } while (!isEmpty);
-
-        isEmpty = false;
-
-        do {
-            System.out.print("Enter i for B > ");
-            Bi = in.nextInt();
-
-            System.out.print("Enter j for B > ");
-            Bj = in.nextInt();
-
-            if (randomlyGenMatrix[Bj][Bi].isOpen()) {
-                isEmpty = true;
-            } else {
-                System.out.println("Axis is closed Try another one");
-            }
-        } while (!isEmpty);
-
-        PathFindingOnSquaredGrid pathfinding = new PathFindingOnSquaredGrid(randomlyGenMatrix);
-
-        Cell start = new Cell(Ai, Aj, id(Ai, Aj, randomlyGenMatrix.length), true);
-        Cell end = new Cell(Bi, Bj, id(Bi, Bj, randomlyGenMatrix.length), true);
-
-        //pathfinding.findPathManhattan(randomlyGenMatrix, start, end);
-
         Scanner sc = new Scanner(System.in);
 
-        // Start the clock ticking in order to capture the time being spent on inputting the coordinates
-        // You should position this command accordingly in order to perform the algorithmic analysis
-        Stopwatch timer = new Stopwatch();
 
-        pathfinding.findPathManhattan(start, end);
+        System.out.println("-----------|Path Finding|-----------");
 
-        // THIS IS AN EXAMPLE ONLY ON HOW TO USE THE JAVA INTERNAL WATCH
-        // Stop the clock ticking in order to capture the time being spent on inputting the coordinates
-        // You should position this command accordingly in order to perform the algorithmic analysis
-        StdOut.println("Elapsed time Manhattan = " + timer.elapsedTime());
+        System.out.print("Enter grid size: ");
+        int size = 0;
+        double prob = 0.0;
 
-        sc.nextInt();
+        boolean isValid = false;
+        do {
+            try {
+                System.out.print("Enter grid size: ");
+                size = sc.nextInt();
 
-        timer = new Stopwatch();
+                System.out.print("Enter probability: ");
+                prob = sc.nextDouble();
+                if (prob >= 0 && prob <= 1) {
+                    isValid = true;
+                } else {
+                    System.out.println("\nEnter between 0 - 1\n");
+                }
+            } catch (Exception e) {
+                System.out.println("\nInvalid input try again\n");
+            }
+        } while (!isValid);
 
-        pathfinding.findPathEuclidean(start, end);
-        StdOut.println("Elapsed time Euclidean= " + timer.elapsedTime());
+        System.out.println();
 
-        sc.nextInt();
+        Cell[][] randomlyGenMatrix = randomCell(size, prob);
 
-        timer = new Stopwatch();
+        do {
+            showCell(randomlyGenMatrix);
 
-        pathfinding.findPathChebyshev(start, end);
+            int startx = 0;
+            int starty = 0;
+            int endx = 0;
+            int endy = 0;
 
-        StdOut.println("Elapsed time Chebyshev= " + timer.elapsedTime());
+            String o = null;
 
-        //show(randomlyGenMatrix, true, Aj, Ai, Bj, Bi);
+            boolean isEmpty = false;
+            do {
+                try {
+                    System.out.print("Enter x for start > ");
+                    startx = sc.nextInt();
+
+                    System.out.print("Enter y for start > ");
+                    starty = sc.nextInt();
+
+                    if (randomlyGenMatrix[starty][startx].isOpen()) {
+                        isEmpty = true;
+                    } else {
+                        System.out.println("\nAxis is closed Try another one\n");
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("\nEnter valid answer\n");
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("\nInputs are out of range try again\n");
+                }
+            } while (!isEmpty);
+
+            System.out.println();
+
+            isEmpty = false;
+
+            do {
+                try {
+                    System.out.print("Enter x for end > ");
+                    endx = sc.nextInt();
+
+                    System.out.print("Enter y for end > ");
+                    endy = sc.nextInt();
+
+                    if (randomlyGenMatrix[endy][endx].isOpen()) {
+                        isEmpty = true;
+                    } else {
+                        System.out.println("\nAxis is closed Try another one\n");
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("\nEnter valid answer\n");
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    System.out.println("\nOut of range try again\n");
+                }
+            } while (!isEmpty);
+
+            System.out.println();
+
+            String option = null;
+            do {
+                //TODO has to change
+                System.out.println("Which distance do you prefer?");
+                System.out.println("[1] Manhattan\n[2] Euclidean\n[3] Chebyshev\n");
+                System.out.print("Answer: ");
+                option = sc.next();
+                if (!option.matches("[123]")) {
+                    System.out.println("Invalid option try again");
+                    sc.next();
+                }
+            } while (!option.matches("[123]"));
+
+            Stopwatch timer = null;
+
+            PathFindingOnSquaredGrid pathfinding = new PathFindingOnSquaredGrid(randomlyGenMatrix);
+
+            Cell start = new Cell(startx, starty, id(startx, starty, randomlyGenMatrix.length), true);
+            Cell end = new Cell(endx, endy, id(endx, endy, randomlyGenMatrix.length), true);
+
+            switch (option) {
+                case "1":
+                    timer = new Stopwatch();
+                    pathfinding.findPathManhattan(start, end);
+                    //System.out.println("Manhattan");
+                    System.out.println("Elapsed time Manhattan = " + timer.elapsedTime());
+                    break;
+                case "2":
+                    timer = new Stopwatch();
+                    pathfinding.findPathEuclidean(start, end);
+                    //System.out.println("Euclidean");
+                    System.out.println("Elapsed time Euclidean= " + timer.elapsedTime());
+                    break;
+                case "3":
+                    timer = new Stopwatch();
+                    pathfinding.findPathChebyshev(start, end);
+                    //System.out.println("Chebushev");
+                    System.out.println("Elapsed time Chebyshev= " + timer.elapsedTime());
+                    break;
+            }
+
+            System.out.println();
+
+            boolean isValidated = false;
+            do {
+                System.out.println("Options\n[Y] Find path sc same matrix again\n[N] Try different matrix\n[Q] Quit");
+                System.out.print("Answer: ");
+                o = sc.next();
+                o = o.toLowerCase();
+                if (o.matches("[ynq]")) {
+                    isValidated = true;
+                } else {
+                    System.out.println("\nInvalid input try again");
+                }
+            } while (!isValidated);
+
+            StdDraw.clear();
+            StdDraw.setPenColor();
+            StdDraw.setPenRadius();
+            System.out.println();
+
+            if (o.equals("q")) {
+                System.exit(1);
+            } else if (o.equals("n")) {
+                main(new String[]{});
+            }
+        } while (true);
     }
 
     //TODO didnt understand
