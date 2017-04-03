@@ -57,7 +57,7 @@ public class PathFindingOnSquaredGrid {
 
             closeList.add(current);
 
-            ArrayList<Cell> neighbours = getNeighboursMan(current, grid);
+            ArrayList<Cell> neighbours = getNeighbours(current, grid, false);
             checkNeighbourMan(neighbours, closeList, openList, current);
         }
 
@@ -105,7 +105,7 @@ public class PathFindingOnSquaredGrid {
 
             closeList.add(current);
 
-            ArrayList<Cell> neighbours = getNeighbours(current, grid);
+            ArrayList<Cell> neighbours = getNeighbours(current, grid, true);
             checkNeighboursEuc(neighbours, closeList, openList, current);
         }
 
@@ -152,7 +152,7 @@ public class PathFindingOnSquaredGrid {
 
             closeList.add(current);
 
-            ArrayList<Cell> neighbours = getNeighbours(current, grid);
+            ArrayList<Cell> neighbours = getNeighbours(current, grid, true);
             checkNeighboursChe(neighbours, closeList, openList, current);
         }
 
@@ -275,7 +275,7 @@ public class PathFindingOnSquaredGrid {
      * @param grid   Matrix to search
      * @return adjacent Cells
      */
-    private ArrayList<Cell> getNeighbours(Cell parent, Cell[][] grid) {
+    private ArrayList<Cell> getNeighbours(Cell parent, Cell[][] grid, boolean diagonalIsAlowed) {
         ArrayList<Cell> nei = new ArrayList<>();
 
         int x = parent.getX();
@@ -286,7 +286,7 @@ public class PathFindingOnSquaredGrid {
             nei.add(grid[y][x + 1]);
         }
         //South East
-        if (x < SIZE - 1 && y < SIZE - 1 && open(x + 1, y + 1)) {
+        if (x < SIZE - 1 && y < SIZE - 1 && open(x + 1, y + 1) && diagonalIsAlowed) {
             nei.add(grid[y + 1][x + 1]);
         }
         //South
@@ -294,7 +294,7 @@ public class PathFindingOnSquaredGrid {
             nei.add(grid[y + 1][x]);
         }
         //South West
-        if (x > 0 && y < SIZE - 1 && open(x - 1, y + 1)) {
+        if (x > 0 && y < SIZE - 1 && open(x - 1, y + 1) && diagonalIsAlowed) {
             nei.add(grid[y + 1][x - 1]);
         }
         //West
@@ -302,7 +302,7 @@ public class PathFindingOnSquaredGrid {
             nei.add(grid[y][x - 1]);
         }
         //North West
-        if (x > 0 && y > 0 && open(x - 1, y - 1)) {
+        if (x > 0 && y > 0 && open(x - 1, y - 1) && diagonalIsAlowed) {
             nei.add(grid[y - 1][x - 1]);
         }
         //North
@@ -310,42 +310,8 @@ public class PathFindingOnSquaredGrid {
             nei.add(grid[y - 1][x]);
         }
         //North East
-        if (x + 1 < SIZE - 1 && y > 0 && open(x + 1, y - 1)) {
+        if (x + 1 < SIZE - 1 && y > 0 && open(x + 1, y - 1) && diagonalIsAlowed) {
             nei.add(grid[y - 1][x + 1]);
-        }
-
-        return nei;
-    }
-
-    /**
-     * Get adjacent Cells of current Cell
-     * Search in 4 directions
-     *
-     * @param parent current Cell
-     * @param grid   Matrix to search
-     * @return adjacent Cells
-     */
-    private ArrayList<Cell> getNeighboursMan(Cell parent, Cell[][] grid) {
-        ArrayList<Cell> nei = new ArrayList<>();
-
-        int x = parent.getX();
-        int y = parent.getY();
-
-        //East
-        if (x < SIZE - 1 && open(x + 1, y)) {
-            nei.add(grid[y][x + 1]);
-        }
-        //South
-        if (y < SIZE - 1 && open(x, y + 1)) {
-            nei.add(grid[y + 1][x]);
-        }
-        //West
-        if (x > 0 && open(x - 1, y)) {
-            nei.add(grid[y][x - 1]);
-        }
-        //North
-        if (y > 0 && open(x, y - 1)) {
-            nei.add(grid[y - 1][x]);
         }
 
         return nei;
@@ -684,19 +650,16 @@ public class PathFindingOnSquaredGrid {
                 case "1":
                     timer = new Stopwatch();
                     pathfinding.findPathManhattan(start, end);
-                    //System.out.println("Manhattan");
                     System.out.println("Elapsed time Manhattan = " + timer.elapsedTime());
                     break;
                 case "2":
                     timer = new Stopwatch();
                     pathfinding.findPathEuclidean(start, end);
-                    //System.out.println("Euclidean");
                     System.out.println("Elapsed time Euclidean= " + timer.elapsedTime());
                     break;
                 case "3":
                     timer = new Stopwatch();
                     pathfinding.findPathChebyshev(start, end);
-                    //System.out.println("Chebushev");
                     System.out.println("Elapsed time Chebyshev= " + timer.elapsedTime());
                     break;
             }
