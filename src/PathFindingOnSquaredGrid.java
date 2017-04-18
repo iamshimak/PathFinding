@@ -35,7 +35,7 @@ public class PathFindingOnSquaredGrid {
      * @param end   path finding end Cell
      */
     public void findPathManhattan(Cell start, Cell end) {
-        PriorityQueue<Cell> openList = new PriorityQueue<>(new Heuristic());
+        PriorityQueue<Cell> openList = new PriorityQueue<>(new HeuristicComparator());
         ArrayList<Cell> closeList = new ArrayList<>();
 
         GOALX = end.getX();
@@ -81,7 +81,7 @@ public class PathFindingOnSquaredGrid {
      * @param end   path finding end Cell
      */
     public void findPathEuclidean(Cell start, Cell end) {
-        PriorityQueue<Cell> openList = new PriorityQueue<>(new Heuristic());
+        PriorityQueue<Cell> openList = new PriorityQueue<>(new HeuristicComparator());
         ArrayList<Cell> closeList = new ArrayList<>();
 
         GOALX = end.getX();
@@ -129,7 +129,7 @@ public class PathFindingOnSquaredGrid {
      * @param end   path finding end Cell
      */
     public void findPathChebyshev(Cell start, Cell end) {
-        PriorityQueue<Cell> openList = new PriorityQueue<>(new Heuristic());
+        PriorityQueue<Cell> openList = new PriorityQueue<>(new HeuristicComparator());
         ArrayList<Cell> closeList = new ArrayList<>();
 
         GOALX = end.getX();
@@ -377,7 +377,6 @@ public class PathFindingOnSquaredGrid {
      * @param bx current X
      * @param by current Y
      * @return H cost
-     * @throws IllegalArgumentException
      */
     private int manhattan(int ax, int ay, int bx, int by) {
         return Math.abs(ax - bx) + Math.abs(ay - by);
@@ -419,7 +418,7 @@ public class PathFindingOnSquaredGrid {
      * @param SIZE grid size
      * @return id
      */
-    protected static int id(int x, int y, int SIZE) {
+    private static int id(int x, int y, int SIZE) {
         return SIZE * y + x;
     }
 
@@ -449,7 +448,7 @@ public class PathFindingOnSquaredGrid {
      * @param x2 second circle's x
      * @param y2 second circle's y
      */
-    public static void drawCircles(Cell[][] a, int x1, int y1, int x2, int y2) {
+    private static void drawCircles(Cell[][] a, int x1, int y1, int x2, int y2) {
         int N = a.length;
         StdDraw.setXscale(-1, N);
         StdDraw.setYscale(-1, N);
@@ -469,7 +468,7 @@ public class PathFindingOnSquaredGrid {
      * @param y1    circle's y
      * @param color circle's colour
      */
-    public static void drawCircle(Cell[][] a, int x1, int y1, Color color) {
+    private static void drawCircle(Cell[][] a, int x1, int y1, Color color) {
         StdDraw.setPenColor(color);
         StdDraw.filledSquare(x1, a.length - y1 - 1, .5);
     }
@@ -482,7 +481,7 @@ public class PathFindingOnSquaredGrid {
      * @param x2 second cell's x
      * @param y2 second cell's y
      */
-    public static void drawLine(int x1, int y1, int x2, int y2) {
+    private static void drawLine(int x1, int y1, int x2, int y2) {
         StdDraw.setPenColor(Color.RED);
         StdDraw.setPenRadius(0.01);
         StdDraw.line(x2, SIZE - y2 - 1, x1, SIZE - y1 - 1);
@@ -525,7 +524,7 @@ public class PathFindingOnSquaredGrid {
     }
 
     // draw the N-by-N Cell matrix to standard draw
-    public static void showCell(Cell[][] a) {
+    private static void showCell(Cell[][] a) {
         int N = a.length;
         StdDraw.setXscale(-1, N);
         StdDraw.setYscale(-1, N);
@@ -595,6 +594,7 @@ public class PathFindingOnSquaredGrid {
                     }
                 } catch (InputMismatchException e) {
                     System.out.println("\nEnter valid answer\n");
+                    sc.next();
                 } catch (ArrayIndexOutOfBoundsException e) {
                     System.out.println("\nInputs are out of range try again\n");
                 }
@@ -619,8 +619,10 @@ public class PathFindingOnSquaredGrid {
                     }
                 } catch (InputMismatchException e) {
                     System.out.println("\nEnter valid answer\n");
+                    sc.next();
                 } catch (ArrayIndexOutOfBoundsException e) {
                     System.out.println("\nOut of range try again\n");
+                    sc.next();
                 }
             } while (!isEmpty);
 
@@ -693,7 +695,7 @@ public class PathFindingOnSquaredGrid {
     }
 
     //TODO didnt understand
-    class Heuristic implements Comparator<Object> {
+    class HeuristicComparator implements Comparator<Object> {
 
         @Override
         public int compare(Object o1, Object o2) {
