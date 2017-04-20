@@ -47,6 +47,8 @@ public class PathFindingOnSquaredGrid {
         start.setParent(start);
         openList.add(start);
 
+        System.out.println("Heuristic cost " + manhattan(start.getX(), start.getY(), end.getX(), end.getY()));
+
         while (!openList.isEmpty()) {
             Cell current = openList.poll();
 
@@ -92,6 +94,8 @@ public class PathFindingOnSquaredGrid {
         start.setG(0);
         start.setParent(start);
         openList.add(start);
+
+        System.out.println("Heuristic cost : " + euclidean(start.getX(), start.getY(), end.getX(), end.getY()));
 
         while (!openList.isEmpty()) {
             Cell current = openList.poll();
@@ -140,6 +144,8 @@ public class PathFindingOnSquaredGrid {
         start.setG(0);
         start.setParent(start);
         openList.add(start);
+
+        System.out.println("Heuristic cost " + chebyshev(start.getX(), start.getY(), end.getX(), end.getY()));
 
         while (!openList.isEmpty()) {
             Cell current = openList.poll();
@@ -275,7 +281,7 @@ public class PathFindingOnSquaredGrid {
      * @param grid   Matrix to search
      * @return adjacent Cells
      */
-    private ArrayList<Cell> getNeighbours(Cell parent, Cell[][] grid, boolean diagonalIsAlowed) {
+    private ArrayList<Cell> getNeighbours(Cell parent, Cell[][] grid, boolean diagonalIsAllowed) {
         ArrayList<Cell> nei = new ArrayList<>();
 
         int x = parent.getX();
@@ -286,7 +292,7 @@ public class PathFindingOnSquaredGrid {
             nei.add(grid[y][x + 1]);
         }
         //South East
-        if (x < SIZE - 1 && y < SIZE - 1 && open(x + 1, y + 1) && diagonalIsAlowed) {
+        if (x < SIZE - 1 && y < SIZE - 1 && open(x + 1, y + 1) && diagonalIsAllowed) {
             nei.add(grid[y + 1][x + 1]);
         }
         //South
@@ -294,7 +300,7 @@ public class PathFindingOnSquaredGrid {
             nei.add(grid[y + 1][x]);
         }
         //South West
-        if (x > 0 && y < SIZE - 1 && open(x - 1, y + 1) && diagonalIsAlowed) {
+        if (x > 0 && y < SIZE - 1 && open(x - 1, y + 1) && diagonalIsAllowed) {
             nei.add(grid[y + 1][x - 1]);
         }
         //West
@@ -302,7 +308,7 @@ public class PathFindingOnSquaredGrid {
             nei.add(grid[y][x - 1]);
         }
         //North West
-        if (x > 0 && y > 0 && open(x - 1, y - 1) && diagonalIsAlowed) {
+        if (x > 0 && y > 0 && open(x - 1, y - 1) && diagonalIsAllowed) {
             nei.add(grid[y - 1][x - 1]);
         }
         //North
@@ -310,7 +316,7 @@ public class PathFindingOnSquaredGrid {
             nei.add(grid[y - 1][x]);
         }
         //North East
-        if (x + 1 < SIZE - 1 && y > 0 && open(x + 1, y - 1) && diagonalIsAlowed) {
+        if (x + 1 < SIZE - 1 && y > 0 && open(x + 1, y - 1) && diagonalIsAllowed) {
             nei.add(grid[y - 1][x + 1]);
         }
 
@@ -536,6 +542,28 @@ public class PathFindingOnSquaredGrid {
                 else StdDraw.filledSquare(j, N - i - 1, .5);
     }
 
+    private static Cell[][] arrangedObstacles(int size) {
+        Cell[][] cells = new Cell[size][size];
+        boolean obstacleDecider = true;
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                if (x % 2 == 0) {
+                    cells[x][y] = new Cell(y, x, id(y, x, size), true);
+                } else {
+                    if (obstacleDecider && y + 1 == size || !obstacleDecider && y == 0) {
+                        cells[x][y] = new Cell(y, x, id(y, x, size), true);
+                    } else {
+                        cells[x][y] = new Cell(y, x, id(y, x, size), false);
+                    }
+                }
+            }
+            if (x % 2 != 0) {
+                obstacleDecider = !obstacleDecider;
+            }
+        }
+        return cells;
+    }
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
@@ -567,6 +595,7 @@ public class PathFindingOnSquaredGrid {
         System.out.println();
 
         Cell[][] randomlyGenMatrix = randomCell(size, prob);
+        //Cell[][] randomlyGenMatrix = arrangedObstacles(size);
 
         do {
             showCell(randomlyGenMatrix);
@@ -643,25 +672,28 @@ public class PathFindingOnSquaredGrid {
 
             Stopwatch timer = null;
 
-            PathFindingOnSquaredGrid pathfinding = new PathFindingOnSquaredGrid(randomlyGenMatrix);
+            PathFindingOnSquaredGrid pathFinding = new PathFindingOnSquaredGrid(randomlyGenMatrix);
+            //TODO change this like get Cell from array thank you for the bug SK
+            //Cell start = new Cell(startx, starty, id(startx, starty, randomlyGenMatrix.length), true);
+            //Cell end = new Cell(endx, endy, id(endx, endy, randomlyGenMatrix.length), true);
 
-            Cell start = new Cell(startx, starty, id(startx, starty, randomlyGenMatrix.length), true);
-            Cell end = new Cell(endx, endy, id(endx, endy, randomlyGenMatrix.length), true);
+            Cell start = randomlyGenMatrix[starty][startx];
+            Cell end = randomlyGenMatrix[endy][endx];
 
             switch (option) {
                 case "1":
                     timer = new Stopwatch();
-                    pathfinding.findPathManhattan(start, end);
+                    pathFinding.findPathManhattan(start, end);
                     System.out.println("Elapsed time Manhattan = " + timer.elapsedTime());
                     break;
                 case "2":
                     timer = new Stopwatch();
-                    pathfinding.findPathEuclidean(start, end);
+                    pathFinding.findPathEuclidean(start, end);
                     System.out.println("Elapsed time Euclidean= " + timer.elapsedTime());
                     break;
                 case "3":
                     timer = new Stopwatch();
-                    pathfinding.findPathChebyshev(start, end);
+                    pathFinding.findPathChebyshev(start, end);
                     System.out.println("Elapsed time Chebyshev= " + timer.elapsedTime());
                     break;
             }
@@ -670,7 +702,7 @@ public class PathFindingOnSquaredGrid {
 
             boolean isValidated = false;
             do {
-                System.out.println("Options\n[Y] Find path sc same matrix again\n[N] Try different matrix\n[Q] Quit");
+                System.out.println("Options\n[Y] Find path with same matrix again\n[N] Try different matrix\n[Q] Quit");
                 System.out.print("Answer: ");
                 o = sc.next();
                 o = o.toLowerCase();
@@ -694,7 +726,6 @@ public class PathFindingOnSquaredGrid {
         } while (true);
     }
 
-    //TODO didnt understand
     class HeuristicComparator implements Comparator<Object> {
 
         @Override
