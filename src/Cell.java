@@ -5,8 +5,9 @@ public class Cell {
     private int x;
     private int y;
     private int id;
-    private int g;
-    private Double h;
+    private double g;
+    private double h;
+    private double f;
     private Cell parent;
     private boolean isOpen;
 
@@ -29,12 +30,16 @@ public class Cell {
         return id;
     }
 
-    public int getG() {
+    public double getG() {
         return g;
     }
 
-    public Double getH() {
+    public double getH() {
         return h;
+    }
+
+    public double getF() {
+        return f;
     }
 
     public Cell getParent() {
@@ -49,12 +54,16 @@ public class Cell {
         this.parent = parent;
     }
 
-    public void setG(int g) {
+    public void setG(double g) {
         this.g = g;
     }
 
-    public void setH(Double h) {
+    public void setH(double h) {
         this.h = h;
+    }
+
+    public void setF(double f) {
+        this.f = f;
     }
 
     public void setOpen(boolean open) {
