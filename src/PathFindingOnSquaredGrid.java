@@ -47,7 +47,7 @@ public class PathFindingOnSquaredGrid {
         start.setParent(start);
         openList.add(start);
 
-        System.out.println("Heuristic cost " + manhattan(start.getX(), start.getY(), end.getX(), end.getY()));
+        System.out.println("Heuristic cost : " + manhattan(start.getX(), start.getY(), end.getX(), end.getY()));
 
         while (!openList.isEmpty()) {
             Cell current = openList.poll();
@@ -66,7 +66,6 @@ public class PathFindingOnSquaredGrid {
         if (lastCell != null) {
             System.out.println("\nTraveled distance (G cost) : " + lastCell.getG());
             while (lastCell != start) {
-                //System.out.print(endCell.getId() + " -> " + endCell.getParent().getId() + "\n");
                 drawLine(lastCell.getParent().getX(), lastCell.getParent().getY(), lastCell.getX(), lastCell.getY());
                 lastCell = lastCell.getParent();
             }
@@ -100,8 +99,6 @@ public class PathFindingOnSquaredGrid {
         while (!openList.isEmpty()) {
             Cell current = openList.poll();
 
-            //drawCircle(grid, current.getX(), current.getY());
-
             if (current.getId() == end.getId()) {
                 lastCell = current;
                 break;
@@ -116,7 +113,6 @@ public class PathFindingOnSquaredGrid {
         if (lastCell != null) {
             System.out.println("\nTraveled distance (G cost) :" + lastCell.getG());
             while (lastCell != start) {
-                //System.out.print(lastCell.getId() + " -> " + lastCell.getParent().getId() + "\n");
                 drawLine(lastCell.getParent().getX(), lastCell.getParent().getY(), lastCell.getX(), lastCell.getY());
                 lastCell = lastCell.getParent();
             }
@@ -145,7 +141,7 @@ public class PathFindingOnSquaredGrid {
         start.setParent(start);
         openList.add(start);
 
-        System.out.println("Heuristic cost " + chebyshev(start.getX(), start.getY(), end.getX(), end.getY()));
+        System.out.println("Heuristic cost : " + chebyshev(start.getX(), start.getY(), end.getX(), end.getY()));
 
         while (!openList.isEmpty()) {
             Cell current = openList.poll();
@@ -164,7 +160,6 @@ public class PathFindingOnSquaredGrid {
 
         if (lastCell != null) {
             while (lastCell != start) {
-                //System.out.print(lastCell.getId() + " -> " + lastCell.getParent().getId() + "\n");
                 drawLine(lastCell.getParent().getX(), lastCell.getParent().getY(), lastCell.getX(), lastCell.getY());
                 lastCell = lastCell.getParent();
             }
@@ -192,12 +187,12 @@ public class PathFindingOnSquaredGrid {
 
             if (!openList.contains(nei)) {
                 nei.setParent(parent);
-                nei.setG(parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
-                nei.setH((double) manhattan(nei.getX(), parent.getY(), GOALX, GOALY));
+                nei.setG(parent.getG() + gCostEuclidean(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
+                nei.setH(manhattan(nei.getX(), parent.getY(), GOALX, GOALY));
                 openList.add(nei);
             } else {
-                int openG = nei.getG();
-                int neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
+                double openG = nei.getG();
+                double neighG = parent.getG() + gCostEuclidean(parent.getX(), parent.getY(), nei.getX(), nei.getY());
 
                 if (neighG < openG) {
                     nei.setG(neighG);
@@ -225,12 +220,12 @@ public class PathFindingOnSquaredGrid {
 
             if (!openList.contains(nei)) {
                 nei.setParent(parent);
-                nei.setG(parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
+                nei.setG(parent.getG() + gCostEuclidean(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
                 nei.setH(euclidean(nei.getX(), parent.getY(), GOALX, GOALY));
                 openList.add(nei);
             } else {
-                int openG = nei.getG();
-                int neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
+                double openG = nei.getG();
+                double neighG = parent.getG() + gCostEuclidean(parent.getX(), parent.getY(), nei.getX(), nei.getY());
 
                 if (neighG < openG) {
                     nei.setG(neighG);
@@ -258,12 +253,12 @@ public class PathFindingOnSquaredGrid {
 
             if (!openList.contains(nei)) {
                 nei.setParent(parent);
-                nei.setG(parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
-                nei.setH((double) chebyshev(nei.getX(), parent.getY(), GOALX, GOALY));
+                nei.setG(parent.getG() + gCost(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
+                nei.setH(chebyshev(nei.getX(), parent.getY(), GOALX, GOALY));
                 openList.add(nei);
             } else {
-                int openG = nei.getG();
-                int neighG = parent.getG() + gcost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
+                double openG = nei.getG();
+                double neighG = parent.getG() + gCostEuclidean(parent.getX(), parent.getY(), nei.getX(), nei.getY());
 
                 if (neighG < openG) {
                     nei.setG(neighG);
@@ -332,9 +327,61 @@ public class PathFindingOnSquaredGrid {
      * @param by current Y
      * @return G cost
      */
-    private int gcost(int ax, int ay, int bx, int by) {
-        int DIAGONAL = 14;
-        int HOR_VERTI = 10;
+    private double gCostEuclidean(int ax, int ay, int bx, int by) {
+        double DIAGONAL = 1.4;
+        double HOR_VERTI = 1.0;
+
+        //south east
+        if (ax + 1 == bx && ay + 1 == by) {
+            return DIAGONAL;
+        }
+        //south west
+        if (ax - 1 == bx && ay + 1 == by) {
+            return DIAGONAL;
+        }
+        //north west
+        if (ax - 1 == bx && ay - 1 == by) {
+            return DIAGONAL;
+        }
+        //north east
+        if (ax + 1 == bx && ay - 1 == by) {
+            return DIAGONAL;
+        }
+        //east
+        if (ax + 1 == bx && ay == by) {
+            return HOR_VERTI;
+        }
+        //south
+        if (ax == bx && ay + 1 == by) {
+            return HOR_VERTI;
+        }
+        //west
+        if (ax - 1 == bx && ay == by) {
+            return HOR_VERTI;
+        }
+        //north
+        if (ax == bx && ay - 1 == by) {
+            return HOR_VERTI;
+        }
+        //check only the first node
+        if (ax == bx && ay == by) {
+            return 0;
+        }
+        throw new IllegalArgumentException();
+    }
+
+    /**
+     * Calculate G cost between parent and current Axis
+     *
+     * @param ax parent X
+     * @param ay parent Y
+     * @param bx current X
+     * @param by current Y
+     * @return G cost
+     */
+    private int gCost(int ax, int ay, int bx, int by) {
+        int DIAGONAL = 1;
+        int HOR_VERTI = 1;
 
         //south east
         if (ax + 1 == bx && ay + 1 == by) {
@@ -673,9 +720,6 @@ public class PathFindingOnSquaredGrid {
             Stopwatch timer = null;
 
             PathFindingOnSquaredGrid pathFinding = new PathFindingOnSquaredGrid(randomlyGenMatrix);
-            //TODO change this like get Cell from array thank you for the bug SK
-            //Cell start = new Cell(startx, starty, id(startx, starty, randomlyGenMatrix.length), true);
-            //Cell end = new Cell(endx, endy, id(endx, endy, randomlyGenMatrix.length), true);
 
             Cell start = randomlyGenMatrix[starty][startx];
             Cell end = randomlyGenMatrix[endy][endx];
