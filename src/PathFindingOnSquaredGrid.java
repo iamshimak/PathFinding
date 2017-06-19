@@ -1,17 +1,17 @@
 import java.awt.*;
 import java.util.*;
 
-/*************************************************************************
- *  Author: Dr E Kapetanios
- *  Last update: 22-02-2017
- *
- *************************************************************************/
+/**
+ * Created by ShimaK on 29-Mar-17.
+ */
 
 public class PathFindingOnSquaredGrid {
-    private static Cell[][] grid;
-    private static int SIZE;
-    private static int GOALX, GOALY;
-    private static double HORIZONTAL_VERTICAL_COST, DIAGONAL_COST;
+    private Cell[][] grid;
+    private int SIZE;
+    private int GOALX, GOALY;
+    private int DISTANCE;
+    private boolean IS_DIAGONAL_ALLOWED;
+    private double HORIZONTAL_VERTICAL_COST, DIAGONAL_COST;
 
     /**
      * Gets and N by N Cell[][]
@@ -26,33 +26,30 @@ public class PathFindingOnSquaredGrid {
             throw new IllegalArgumentException();
         }
         this.grid = grid;
-        this.SIZE = grid.length;
+        SIZE = grid.length;
     }
 
     /**
-     * Find shortest path using manhattan
+     * Find shortest path using findPath
      *
      * @param start path finding start Cell
      * @param end   path finding end Cell
      */
-    public void manhattan(Cell start, Cell end) {
-        PriorityQueue<Cell> openList = new PriorityQueue<>(new HeuristicComparator());
+    public void findPath(Cell start, Cell end) {
+        PriorityQueue<Cell> openList = new PriorityQueue<>((o1, o2) -> o1.getF() < o2.getF() ? -1 : o1.getF() > o2.getF() ? 1 : 0);
         ArrayList<Cell> closeList = new ArrayList<>();
-
-        setManhattanDistance();
 
         GOALX = end.getX();
         GOALY = end.getY();
 
         Cell lastCell = null;
 
+        calculateHeuristic();
+
         start.setG(0);
-        start.setH(manhattanCost(start.getX(), start.getY(), end.getX(), end.getY()));
         start.setF(start.getG() + start.getH());
         start.setParent(start);
         openList.add(start);
-
-        System.out.println("Heuristic cost : " + manhattanCost(start.getX(), start.getY(), end.getX(), end.getY()));
 
         while (!openList.isEmpty()) {
             Cell current = openList.poll();
@@ -64,8 +61,8 @@ public class PathFindingOnSquaredGrid {
 
             closeList.add(current);
 
-            ArrayList<Cell> neighbours = getAdjacentCells(current, grid, false);
-            checkNeighbourMan(neighbours, closeList, openList, current);
+            ArrayList<Cell> neighbours = getAdjacentCells(current, grid, IS_DIAGONAL_ALLOWED);
+            checkNeighbours(neighbours, closeList, openList, current);
         }
         displayPath(lastCell, start, end);
     }
@@ -73,108 +70,55 @@ public class PathFindingOnSquaredGrid {
     private void setManhattanDistance() {
         HORIZONTAL_VERTICAL_COST = 1.0;
         DIAGONAL_COST = 1.0;
-    }
-
-    /**
-     * Finding shortest path using euclidean
-     *
-     * @param start path finding start Cell
-     * @param end   path finding end Cell
-     */
-    public void euclidean(Cell start, Cell end) {
-        PriorityQueue<Cell> openList = new PriorityQueue<>(new HeuristicComparator());
-        ArrayList<Cell> closeList = new ArrayList<>();
-
-        setEuclideanDistance();
-
-        GOALX = end.getX();
-        GOALY = end.getY();
-
-        Cell lastCell = null;
-
-        start.setG(0);
-        start.setParent(start);
-        openList.add(start);
-
-        System.out.println("Heuristic cost : " + euclideanCost(start.getX(), start.getY(), end.getX(), end.getY()));
-
-        while (!openList.isEmpty()) {
-            Cell current = openList.poll();
-
-            if (current.getId() == end.getId()) {
-                lastCell = current;
-                break;
-            }
-
-            closeList.add(current);
-
-            ArrayList<Cell> neighbours = getAdjacentCells(current, grid, true);
-            checkNeighboursEuc(neighbours, closeList, openList, current);
-        }
-        displayPath(lastCell, start, end);
+        DISTANCE = 1;
+        IS_DIAGONAL_ALLOWED = false;
     }
 
     private void setEuclideanDistance() {
         HORIZONTAL_VERTICAL_COST = 1.0;
         DIAGONAL_COST = 1.4;
-    }
-
-    /**
-     * Finding shortest path using chebyshev
-     *
-     * @param start path finding start Cell
-     * @param end   path finding end Cell
-     */
-    public void chebyshev(Cell start, Cell end) {
-        PriorityQueue<Cell> openList = new PriorityQueue<>(new HeuristicComparator());
-        ArrayList<Cell> closeList = new ArrayList<>();
-
-        setChebyshevDistance();
-
-        GOALX = end.getX();
-        GOALY = end.getY();
-
-        Cell lastCell = null;
-
-        start.setG(0);
-        start.setParent(start);
-        openList.add(start);
-
-        System.out.println("Heuristic cost : " + chebyshevCost(start.getX(), start.getY(), end.getX(), end.getY()));
-
-        while (!openList.isEmpty()) {
-            Cell current = openList.poll();
-
-            if (current.getId() == end.getId()) {
-                System.out.println("Traveled distance in chebyshev: " + current.getG());
-                lastCell = current;
-                break;
-            }
-
-            closeList.add(current);
-
-            ArrayList<Cell> neighbours = getAdjacentCells(current, grid, true);
-            checkNeighboursChe(neighbours, closeList, openList, current);
-        }
-        displayPath(lastCell, start, end);
+        DISTANCE = 2;
+        IS_DIAGONAL_ALLOWED = true;
     }
 
     private void setChebyshevDistance() {
         HORIZONTAL_VERTICAL_COST = 1.0;
         DIAGONAL_COST = 1.0;
+        DISTANCE = 3;
+        IS_DIAGONAL_ALLOWED = true;
+    }
+
+    private void calculateHeuristic() {
+        for (int x = 0; x < SIZE; x++) {
+            for (int y = 0; y < SIZE; y++) {
+                switch (DISTANCE) {
+                    case 1:
+                        grid[x][y].setH(manhattanCost(x, y, GOALX, GOALX));
+                        break;
+                    case 2:
+                        grid[x][y].setH(euclideanCost(x, y, GOALX, GOALX));
+                        break;
+                    case 3:
+                        grid[x][y].setH(chebyshevCost(x, y, GOALX, GOALX));
+                        break;
+                    default:
+                        throw new IllegalArgumentException();
+                }
+            }
+        }
     }
 
     /**
      * Check adjacent Cells and add to openList
      * If already added compare G cost with openList Cell's G cost
-     * Calculating H value using manhattan distance
+     * Calculates F and assign to Cell instance
      *
      * @param neighbours Adjacent Cells of current Cell
      * @param closeList  Cells already searched
      * @param openList   Adjacent Cells previously added
      * @param parent     Current Cell
      */
-    public void checkNeighbourMan(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
+    public void checkNeighbours(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
         drawCircle(grid, parent.getX(), parent.getY(), Color.ORANGE);
         for (Cell nei : neighbours) {
             if (closeList.contains(nei)) continue;
@@ -183,74 +127,7 @@ public class PathFindingOnSquaredGrid {
             if (!openList.contains(nei)) {
                 nei.setParent(parent);
                 nei.setG(parent.getG() + gCost(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
-                nei.setH(manhattanCost(nei.getX(), nei.getY(), GOALX, GOALY));
                 nei.setF(nei.getG() + nei.getH());
-                openList.add(nei);
-            } else {
-                double openG = nei.getG();
-                double neighG = parent.getG() + gCost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
-
-                if (neighG < openG) {
-                    nei.setG(neighG);
-                    nei.setParent(parent);
-                }
-            }
-        }
-    }
-
-    /**
-     * Check adjacent Cells and add to openList
-     * If already added compare G cost with openList Cell's G cost
-     * Calculating H value using euclidean distance
-     *
-     * @param neighbours Adjacent Cells of current Cell
-     * @param closeList  Cells already searched
-     * @param openList   Adjacent Cells previously added
-     * @param parent     Current Cell
-     */
-    public void checkNeighboursEuc(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
-        drawCircle(grid, parent.getX(), parent.getY(), Color.ORANGE);
-        for (Cell nei : neighbours) {
-            if (closeList.contains(nei)) continue;
-            drawCircle(grid, nei.getX(), nei.getY(), Color.YELLOW);
-
-            if (!openList.contains(nei)) {
-                nei.setParent(parent);
-                nei.setG(parent.getG() + gCost(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
-                nei.setH(euclideanCost(nei.getX(), parent.getY(), GOALX, GOALY));
-                openList.add(nei);
-            } else {
-                double openG = nei.getG();
-                double neighG = parent.getG() + gCost(parent.getX(), parent.getY(), nei.getX(), nei.getY());
-
-                if (neighG < openG) {
-                    nei.setG(neighG);
-                    nei.setParent(parent);
-                }
-            }
-        }
-    }
-
-    /**
-     * Check adjacent Cells and add to openList
-     * If already added compare G cost with openList Cell's G cost
-     * Calculating H value using chebyshev distance
-     *
-     * @param neighbours Adjacent Cells of current Cell
-     * @param closeList  Cells already searched
-     * @param openList   Adjacent Cells previously added
-     * @param parent     Current Cell
-     */
-    public void checkNeighboursChe(ArrayList<Cell> neighbours, ArrayList<Cell> closeList, PriorityQueue<Cell> openList, Cell parent) {
-        drawCircle(grid, parent.getX(), parent.getY(), Color.ORANGE);
-        for (Cell nei : neighbours) {
-            if (closeList.contains(nei)) continue;
-            drawCircle(grid, nei.getX(), nei.getY(), Color.YELLOW);
-
-            if (!openList.contains(nei)) {
-                nei.setParent(parent);
-                nei.setG(parent.getG() + gCost(parent.getX(), parent.getY(), nei.getX(), nei.getY()));
-                nei.setH(chebyshevCost(nei.getX(), parent.getY(), GOALX, GOALY));
                 openList.add(nei);
             } else {
                 double openG = nei.getG();
@@ -290,36 +167,36 @@ public class PathFindingOnSquaredGrid {
 
         int x = parent.getX();
         int y = parent.getY();
-
-        //East
+        //TODO optimize this method
+        //Right
         if (x < SIZE - 1 && open(x + 1, y)) {
             nei.add(grid[y][x + 1]);
         }
-        //South East
+        //Right Bottom
         if (x < SIZE - 1 && y < SIZE - 1 && open(x + 1, y + 1) && isDiagonalAllowed) {
             nei.add(grid[y + 1][x + 1]);
         }
-        //South
+        //Bottom
         if (y < SIZE - 1 && open(x, y + 1)) {
             nei.add(grid[y + 1][x]);
         }
-        //South West
+        //Bottom Left
         if (x > 0 && y < SIZE - 1 && open(x - 1, y + 1) && isDiagonalAllowed) {
             nei.add(grid[y + 1][x - 1]);
         }
-        //West
+        //Left
         if (x > 0 && open(x - 1, y)) {
             nei.add(grid[y][x - 1]);
         }
-        //North West
+        //Top Left
         if (x > 0 && y > 0 && open(x - 1, y - 1) && isDiagonalAllowed) {
             nei.add(grid[y - 1][x - 1]);
         }
-        //North
+        //Top
         if (y > 0 && open(x, y - 1)) {
             nei.add(grid[y - 1][x]);
         }
-        //North East
+        //Top Right
         if (x + 1 < SIZE - 1 && y > 0 && open(x + 1, y - 1) && isDiagonalAllowed) {
             nei.add(grid[y - 1][x + 1]);
         }
@@ -377,7 +254,7 @@ public class PathFindingOnSquaredGrid {
     }
 
     /**
-     * Calculate H cost using manhattan distance
+     * Calculate H cost using findPath distance
      *
      * @param ax parent X
      * @param ay parent Y
@@ -488,7 +365,7 @@ public class PathFindingOnSquaredGrid {
      * @param x2 second cell's x
      * @param y2 second cell's y
      */
-    private static void drawLine(int x1, int y1, int x2, int y2) {
+    private void drawLine(int x1, int y1, int x2, int y2) {
         StdDraw.setPenColor(Color.RED);
         StdDraw.setPenRadius(0.01);
         StdDraw.line(x2, SIZE - y2 - 1, x1, SIZE - y1 - 1);
@@ -502,7 +379,7 @@ public class PathFindingOnSquaredGrid {
      * @param p probability
      * @return Cell[][] matrix
      */
-    public static Cell[][] randomCell(int N, double p) {
+    private static Cell[][] randomCell(int N, double p) {
         Cell[][] a = new Cell[N][N];
 
         for (int i = 0; i < N; i++) {
@@ -567,7 +444,6 @@ public class PathFindingOnSquaredGrid {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-
 
         System.out.println("-----------|Path Finding|-----------");
 
@@ -681,17 +557,20 @@ public class PathFindingOnSquaredGrid {
             switch (option) {
                 case "1":
                     timer = new Stopwatch();
-                    pathFinding.manhattan(start, end);
-                    System.out.println("Elapsed time manhattan = " + timer.elapsedTime());
+                    pathFinding.setManhattanDistance();
+                    pathFinding.findPath(start, end);
+                    System.out.println("Elapsed time findPath = " + timer.elapsedTime());
                     break;
                 case "2":
                     timer = new Stopwatch();
-                    pathFinding.euclidean(start, end);
+                    pathFinding.setEuclideanDistance();
+                    pathFinding.findPath(start, end);
                     System.out.println("Elapsed time euclidean= " + timer.elapsedTime());
                     break;
                 case "3":
                     timer = new Stopwatch();
-                    pathFinding.chebyshev(start, end);
+                    pathFinding.setChebyshevDistance();
+                    pathFinding.findPath(start, end);
                     System.out.println("Elapsed time chebyshev= " + timer.elapsedTime());
                     break;
             }
@@ -722,13 +601,5 @@ public class PathFindingOnSquaredGrid {
                 main(new String[]{});
             }
         } while (true);
-    }
-
-    class HeuristicComparator implements Comparator<Cell> {
-        @Override
-        public int compare(Cell o1, Cell o2) {
-            return o1.getF() < o2.getF() ? -1 :
-                    o1.getF() > o2.getF() ? 1 : 0;
-        }
     }
 }
